@@ -1,0 +1,244 @@
+// // import React, { useEffect, useState } from "react";
+// // import { Text, View, Pressable, StyleSheet } from "react-native";
+// // import { ScrollView } from "react-native-gesture-handler";
+// // import Animated, {
+// //   Extrapolation,
+// //   interpolateColor,
+// //   useAnimatedStyle,
+// //   useSharedValue,
+// //   withTiming,
+// // } from "react-native-reanimated";
+
+// // interface ClickableTextProps {
+// //   lyrics: (
+// //     | { word: string; definition: string }
+// //     | { word: string; definition?: undefined }
+// //   )[][];
+// //   onPress: (word: string) => void;
+// // }
+
+// // export const ClickableText: React.FC<ClickableTextProps> = ({
+// //   lyrics,
+// //   onPress,
+// // }) => {
+// //   const [selectedLineIndex, setSelectedLineIndex] = React.useState(null);
+// //   const [selectedWordIndex, setSelectedWordIndex] = React.useState(null);
+// //   const selectedLineIndexShared = useSharedValue(null);
+// //   const selectedWordIndexShared = useSharedValue(null);
+
+// //   return (
+// //     <View style={styles.container}>
+// //       {lyrics.map((line, lineIndex) => (
+// //         <View
+// //           key={lineIndex}
+// //           style={{ flexDirection: "row", flexWrap: "nowrap" }}
+// //         >
+// //           {line.map((wordObj, wordIndex) => {
+// //             const word = wordObj.word;
+// //             const isSelected =
+// //               lineIndex === selectedLineIndexShared.value &&
+// //               wordIndex === selectedWordIndexShared.value;
+// //             const isSelectedShared = useSharedValue(isSelected ? 1 : 0);
+
+// //             useEffect(() => {
+// //               isSelectedShared.value = withTiming(isSelected ? 1 : 0, {
+// //                 duration: 200,
+// //               });
+// //             }, [isSelected]);
+// //             const animatedStyle = useAnimatedStyle(() => {
+// //               const backgroundColor = interpolateColor(
+// //                 isSelectedShared.value,
+// //                 [0, 1],
+// //                 ["transparent", "rgba(255,255,255,0.5)"]
+// //               );
+// //               return {
+// //                 backgroundColor,
+// //                 borderWidth: isSelected
+// //                   ? withTiming(1, { duration: 100 })
+// //                   : withTiming(0, { duration: 100 }),
+// //                 borderColor: "black",
+// //               };
+// //             });
+// //             return (
+// //               <Pressable
+// //                 key={wordIndex}
+// //                 onPress={() => {
+// //                   selectedLineIndexShared.value = lineIndex;
+// //                   selectedWordIndexShared.value = wordIndex;
+// //                   onPress(wordObj.definition);
+// //                 }}
+// //                 style={[{}]}
+// //               >
+// //                 <Animated.Text
+// //                   style={[
+// //                     {
+// //                       fontSize: 18,
+// //                       borderRadius: 15,
+// //                       borderColor: "black",
+// //                       paddingVertical: 2,
+// //                       paddingLeft: 3,
+// //                       marginVertical: 2,
+// //                     },
+// //                     animatedStyle,
+// //                   ]}
+// //                 >
+// //                   {word}{" "}
+// //                 </Animated.Text>
+// //               </Pressable>
+// //             );
+// //           })}
+// //         </View>
+// //       ))}
+// //     </View>
+// //   );
+// // };
+
+// // export const ClickableText: React.FC<ClickableTextProps> = ({
+// //   lyrics,
+// //   onPress,
+// // }) => {
+// //   const [selectedLineIndex, setSelectedLineIndex] = useState<number | null>(
+// //     null
+// //   );
+// //   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(
+// //     null
+// //   );
+
+// //   return (
+// //     <View style={styles.container}>
+// //       {lyrics.map((line, lineIndex) => (
+// //         <View
+// //           key={lineIndex}
+// //           style={{ flexDirection: "row", flexWrap: "nowrap" }}
+// //         >
+// //           {line.map(({ word, definition }, wordIndex) => {
+// //             const isSelected =
+// //               lineIndex === selectedLineIndex &&
+// //               wordIndex === selectedWordIndex;
+// //             const backgroundColor = useSharedValue(
+// //               isSelected ? "rgba(255,255,255,0.5)" : "transparent"
+// //             );
+// //             const animatedStyle = useAnimatedStyle(() => {
+// //               return {
+// //                 backgroundColor: withTiming(backgroundColor.value, {
+// //                   duration: 200,
+// //                 }),
+// //               };
+// //             });
+
+// //             return (
+// //               <Pressable
+// //                 key={wordIndex}
+// //                 onPress={() => {
+// //                   setSelectedLineIndex(lineIndex);
+// //                   setSelectedWordIndex(wordIndex);
+// //                   onPress(definition);
+// //                 }}
+// //               >
+// //                 <Animated.Text
+
+// //                 >
+// //                   {word}
+// //                 </Animated.Text>
+// //               </Pressable>
+// //             );
+// //           })}
+// //         </View>
+// //       ))}
+// //     </View>
+// //   );
+// // };
+// import React, { useState, useEffect } from "react";
+// import { Text, View, Pressable, StyleSheet } from "react-native";
+// import { ScrollView } from "react-native-gesture-handler";
+// import Animated, {
+//   interpolateColor,
+//   useAnimatedStyle,
+//   withTiming,
+// } from "react-native-reanimated";
+
+// interface ClickableTextProps {
+//   lyrics: (
+//     | { word: string; definition: string }
+//     | { word: string; definition?: undefined }
+//   )[][];
+//   onPress: (word: string) => void;
+// }
+
+// export const ClickableText: React.FC<ClickableTextProps> = ({
+//   lyrics,
+//   onPress,
+// }) => {
+//   const [selectedLineIndex, setSelectedLineIndex] = useState(-1);
+//   const [selectedWordIndex, setSelectedWordIndex] = useState(-1);
+
+//   return (
+//     <View style={styles.container}>
+//       {lyrics.map((line, lineIndex) => (
+//         <View
+//           key={lineIndex}
+//           style={{ flexDirection: "row", flexWrap: "nowrap" }}
+//         >
+//           {line.map((wordObj, wordIndex) => {
+//             const word = wordObj.word;
+//             const isSelected =
+//               lineIndex === selectedLineIndex && wordIndex === selectedWordIndex;
+
+//             const animatedStyle = useAnimatedStyle(() => {
+//               const backgroundColor = interpolateColor(
+//                 isSelected ? 1 : 0,
+//                 [0, 1],
+//                 ["transparent", "rgba(255,255,255,0.5)"]
+//               );
+
+//               return {
+//                 backgroundColor,
+//                 borderWidth: isSelected ? withTiming(1, {duration: 100}) : withTiming(0, {duration: 100}),
+//                 borderColor: "black",
+//               };
+//             });
+
+//             return (
+//               <Pressable
+//                 key={wordIndex}
+//                 onPress={() => {
+//                   setSelectedLineIndex(lineIndex);
+//                   setSelectedWordIndex(wordIndex);
+//                   onPress(wordObj.definition!);
+//                 }}
+//                 style={[{}]}
+//               >
+//                 <Animated.Text
+//                   style={[
+//                     {
+//                       fontSize: 18,
+//                       borderRadius: 15,
+//                       borderColor: "black",
+//                       paddingVertical: 2,
+//                       paddingLeft: 3,
+//                       marginVertical: 2,
+//                       justifyContent: "center",
+//                       alignItems: "center",
+//                     },
+//                     animatedStyle,
+//                   ]}
+//                 >
+//                   {word}{" "}
+//                 </Animated.Text>
+//               </Pressable>
+//             );
+//           })}
+//         </View>
+//       ))}
+//     </View>
+//   );
+// };
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     alignItems: "center",
+//     width: "100%",
+//     zIndex: 10000,
+//   },
+// });
