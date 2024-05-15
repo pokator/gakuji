@@ -188,7 +188,7 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
     const snapPoints = [
       MAX_TRANSLATE_Y + offset,
       MAX_TRANSLATE_Y + 200 + offset,
-      -200 - offset,
+      -150 - offset,
     ];
 
     // const scrollTo = useCallback((destination: number) => {
@@ -388,7 +388,7 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
                 </Animated.View>
               </View>
             </View>
-            {children}
+            <Animated.View style={[arrowUpStyle]}>{children}</Animated.View>
           </View>
         </Animated.View>
       </GestureDetector>
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flex: 1, // Occupy remaining space
     justifyContent: "flex-end",
-    marginRight: 16,
+    marginRight: 20,
   },
   button: {
     width: 20,
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   text: {
-    marginLeft: 16,
+    marginLeft: 20,
     fontSize: 20,
     textAlign: "left",
     flex: 1,

@@ -242,3 +242,24 @@
 //     zIndex: 10000,
 //   },
 // });
+
+<View style={styles.row}>
+        {/* Icon */}
+        <View style={styles.iconContainer}>
+          <Icon size= {48} source={<Mic />} />
+        </View>
+        {/* Text Input */}
+        <View style={styles.inputContainer}>
+          <TextInput style={styles.input} placeholder="Artist" />
+        </View>
+      </View>
+      <View style={styles.row}>
+        {/* Icon */}
+        <View style={styles.iconContainer}>
+          <Icon size= {48} source={<Disc />} />
+        </View>
+        {/* Text Input */}
+        <View style={styles.inputContainer}>
+          <TextInput style={styles.input} placeholder="Track" />
+        </View>
+      </View>

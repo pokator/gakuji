@@ -54,7 +54,7 @@ export function Saved({ navigation }: { navigation: any }) {
           )}
           keyExtractor={(item) => item.title}
         />
-        <AddButton />
+        <AddButton navigation={navigation}/>
       </View>
     </PaperProvider>
   );

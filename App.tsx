@@ -15,6 +15,7 @@ import { TamaguiProvider } from "tamagui";
 import config from "./tamagui.config";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider, Provider } from "react-native-paper";
+import {LyricsEntryScreen} from "./components/LyricEntry";
 
 const Tab = createBottomTabNavigator();
 // const Tab = createBottomTabNavigator();
@@ -138,6 +139,17 @@ export default function App() {
           >
             <GeneralStack.Screen name="Home" component={TabNavigationScreen} />
             <GeneralStack.Screen name="LyricsView" component={LyricsView} />
+            <GeneralStack.Screen
+              name="LyricsEntry"
+              component={LyricsEntryScreen}
+              listeners={({ navigation}) => ({
+                focus: (e) => {
+                  navigation.setOptions({
+                    headerTitle: "Lyrics Entry",
+                  });
+                }
+              })}
+            />
           </GeneralStack.Navigator>
         </NavigationContainer>
       </TamaguiProvider>
