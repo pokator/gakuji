@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { StyleSheet, Modal, View, TextInput, Button, Text } from "react-native";
+import { StyleSheet, Modal, View, TextInput, Button, Text, TouchableOpacity } from "react-native";
 import { FAB, Portal } from "react-native-paper";
 
 const AddButton = ({navigation}) => {
   const [open, setOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [isDisabled, setIsDisabled] = useState(false); 
   const [uri, setURI] = useState('');
 
   const onStateChange = ({ open }) => setOpen(open);
@@ -49,10 +48,13 @@ const AddButton = ({navigation}) => {
                 value={uri}
                 onChangeText={(text) => setURI(text)}
               />
-              {/* Spotify data display*/}
               <View style={styles.buttonContainer}>
-                <Button title="Cancel"  onPress={handleCloseModal} />
-                <Button title="Submit" disabled={isDisabled} onPress={handleSubmit} />
+                <TouchableOpacity style={styles.button} onPress={handleCloseModal}>
+                  <Text style={styles.buttonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.button, {backgroundColor: '#007bff'}]} onPress={handleSubmit}>
+                  <Text style={[styles.buttonText, {color: '#fff'}]}>Submit</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>
@@ -106,18 +108,31 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     elevation: 5,
-    width: 300,
+    width: '80%',
   },
   input: {
     height: 40,
     borderColor: "gray",
     borderWidth: 1,
+    borderRadius: 5,
     marginBottom: 10,
     paddingHorizontal: 10,
   },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
+  },
+  button: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f0f0f0',
+    paddingVertical: 12,
+    borderRadius: 20,
+    marginHorizontal: 5,
+  },
+  buttonText: {
+    fontSize: 16,
   },
   modalTitle: {
     fontSize: 18,

@@ -1,10 +1,14 @@
-// LyricsEntryScreen.js
-
 import React from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { Mic, Disc } from "@tamagui/lucide-icons";
 
-export function LyricsEntryScreen({ route, navigation }) {
+export function LyricsEntryScreen({
+  route,
+  navigation,
+}: {
+  route: any;
+  navigation: any;
+}) {
   const { fromLink } = route.params;
   console.log("fromLink:", fromLink);
   const handleSubmit = () => {
@@ -70,12 +74,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     width: "90%",
-    borderColor: "rgba(0, 0, 0, 0.25)",
-    borderWidth: 1,
-    borderRadius: 5,
+    // borderColor: "rgba(0, 0, 0, 0.25)",
+    // borderWidth: 1,
+    borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 5,
     marginVertical: 5,
+    backgroundColor: "white",
   },
   iconContainer: {
     flex: 1,
@@ -90,16 +95,15 @@ const styles = StyleSheet.create({
   },
   lyricInput: {
     width: "90%",
-    borderColor: "rgba(0, 0, 0, 0.25)",
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
+    // borderColor: "rgba(0, 0, 0, 0.25)",
+    // borderWidth: 1,
+    borderRadius: 10,
+    // paddingHorizontal: 10,
     flex: 5,
-    shadowColor: "black",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
     elevation: 5,
+    backgroundColor: "white",
+    padding: 10,
+    marginVertical: 10,
   },
   buttonContainer: {
     marginVertical: 10,

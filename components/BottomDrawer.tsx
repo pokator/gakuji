@@ -1,151 +1,3 @@
-// import { Dimensions, StyleSheet, Text, View } from "react-native";
-// import React, {
-//   useCallback,
-//   useEffect,
-//   useImperativeHandle,
-//   useState,
-//   useRef,
-// } from "react";
-// import Animated, {
-//   Extrapolation,
-//   interpolate,
-//   useAnimatedStyle,
-//   useSharedValue,
-//   withSpring,
-//   withTiming,
-//   runOnJS
-// } from "react-native-reanimated";
-// import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-// import Dots from "./Dots";
-// import { ArrowUp, ArrowDown } from "@tamagui/lucide-icons";
-// import { IconButton } from "react-native-paper";
-
-// const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-
-// const MAX_TRANSLATE_Y = -SCREEN_HEIGHT;
-
-// type BottomSheetProps = {
-//   children?: React.ReactNode;
-//   activeIndex?: number;
-//   setHeight: (height: number) => void;
-// };
-
-// export type BottomSheetRefProps = {
-//   scrollTo: (destination: number) => void;
-//   zeroPosition: () => boolean;
-//   openBottomSheet: (newPosition: number) => void;
-//   getSheetHeight: () => number;
-// };
-
-// const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
-//   ({ children, activeIndex, setHeight }, ref) => {
-//     const offset = 35;
-//     const translateY = useSharedValue(0);
-//     const position = useSharedValue(2);
-//     const snapPoints = [
-//       MAX_TRANSLATE_Y + 200 + offset,
-//       MAX_TRANSLATE_Y + 500 + offset,
-//       -200 - offset,
-//     ];
-
-//     const scrollTo = useCallback((destination: number) => {
-//       "worklet";
-//       translateY.value = withSpring(destination, { damping: 50 });
-//       setHeight(destination);
-//     }, []);
-
-//     const zeroPosition = useCallback(() => {
-//       return position.value === 2;
-//     }, []);
-
-//     const getSheetHeight = useCallback(() => {
-//       return SCREEN_HEIGHT + snapPoints[position.value];
-//     }, []);
-
-//     useEffect(() => {
-//       runOnJS(scrollTo)(-200 - offset);
-//     }, []);
-
-//     const openBottomSheet = useCallback((newPosition: number) => {
-//       position.value = newPosition;
-//       runOnJS(scrollTo)(snapPoints[newPosition]);
-//     }, []);
-
-//     useImperativeHandle(
-//       ref,
-//       () => ({ scrollTo, zeroPosition, openBottomSheet, getSheetHeight }),
-//       [scrollTo, zeroPosition, openBottomSheet, getSheetHeight]
-//     );
-
-//     const context = useSharedValue({ y: 0 });
-//     const gesture = Gesture.Pan()
-//       .runOnJS(true)
-//       .onStart(() => {
-//         context.value = { y: translateY.value };
-//       })
-//       .onUpdate((event) => {
-//         translateY.value = event.translationY + context.value.y;
-//         translateY.value = Math.max(translateY.value, MAX_TRANSLATE_Y);
-//       })
-//       .onEnd(() => {
-//         if (translateY.value > -SCREEN_HEIGHT / 3) {
-//           position.value = snapPoints.length - 1;
-//           runOnJS(scrollTo)(snapPoints[snapPoints.length - 1]);
-//         } else if (
-//           translateY.value <= -SCREEN_HEIGHT / 3 &&
-//           translateY.value >= -SCREEN_HEIGHT / 1.5
-//         ) {
-//           position.value = 1;
-//           runOnJS(scrollTo)(snapPoints[1]);
-//         } else if (translateY.value < -SCREEN_HEIGHT / 1.5) {
-//           position.value = 0;
-//           runOnJS(scrollTo)(snapPoints[0]);
-//         }
-//       });
-
-//     const tap = Gesture.Tap().runOnJS(true).onEnd(() => {
-//       if (position.value === 2) {
-//         runOnJS(scrollTo)(snapPoints[1]);
-//         position.value = 1;
-//       } else {
-//         runOnJS(scrollTo)(snapPoints[2]);
-//         position.value = 2;
-//       }
-//     });
-
-//     const rBottomSheetStyle = useAnimatedStyle(() => {
-//       const borderRadius = interpolate(
-//         translateY.value,
-//         [MAX_TRANSLATE_Y + 100, MAX_TRANSLATE_Y],
-//         [25, 5],
-//         Extrapolation.CLAMP
-//       );
-
-//       return {
-//         borderRadius,
-//         transform: [{ translateY: translateY.value }],
-//       };
-//     });
-
-//     return (
-//       <GestureDetector gesture={gesture}>
-//         <Animated.View style={[styles.bottomSheetContainer, rBottomSheetStyle]}>
-//           <GestureDetector gesture={tap}>
-//             <View style={styles.lineContainer}>
-//               <View style={styles.line} />
-//             </View>
-//           </GestureDetector>
-
-//             {children}
-//           </View>
-//         </Animated.View>
-//       </GestureDetector>
-//     );
-//   }
-// );
-
-// export default KanjiSheet;
-
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import React, { useCallback, useEffect, useImperativeHandle } from "react";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -190,13 +42,6 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
       MAX_TRANSLATE_Y + 200 + offset,
       -150 - offset,
     ];
-
-    // const scrollTo = useCallback((destination: number) => {
-    //   "worklet";
-    //   active.value = destination !== 0;
-
-    //   translateY.value = withSpring(destination, { damping: 50 });
-    // }, []);
     const scrollTo = useCallback((destination: number) => {
       "worklet";
       translateY.value = withSpring(destination, { damping: 50 });
@@ -229,10 +74,6 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
       runOnJS(scrollTo)(snapPoints[newPosition]);
     }, []);
 
-    // useImperativeHandle(ref, () => ({ scrollTo, isActive }), [
-    //   scrollTo,
-    //   isActive,
-    // ]);
     useImperativeHandle(
       ref,
       () => ({ scrollTo, zeroPosition, openBottomSheet, getSheetHeight }),
@@ -263,33 +104,8 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
           scrollTo(snapPoints[0]);
         }
       });
-    // const gesture = Gesture.Pan()
-    //   .runOnJS(true)
-    //   .onStart(() => {
-    //     context.value = { y: translateY.value };
-    //   })
-    //   .onUpdate((event) => {
-    //     translateY.value = event.translationY + context.value.y;
-    //     translateY.value = Math.max(translateY.value, MAX_TRANSLATE_Y);
-    //   })
-    //   .onEnd(() => {
-    //     if (translateY.value > -SCREEN_HEIGHT / 3) {
-    //       position.value = snapPoints.length - 1;
-    //       scrollTo(snapPoints[snapPoints.length - 1]);
-    //     } else if (
-    //       translateY.value <= -SCREEN_HEIGHT / 3 &&
-    //       translateY.value >= -SCREEN_HEIGHT / 1.5
-    //     ) {
-    //       position.value = 1;
-    //       scrollTo(snapPoints[1]);
-    //     } else if (translateY.value < -SCREEN_HEIGHT / 1.5) {
-    //       position.value = 0;
-    //       scrollTo(snapPoints[0]);
-    //     }
-    //   });
 
     const tap = Gesture.Tap()
-      // .runOnJS(true)
       .onEnd(() => {
         if (position.value === 2) {
           scrollTo(snapPoints[1]);
@@ -330,12 +146,15 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
 
     // Use arrowUpOpacity animated value directly in the style
     const arrowUpStyle = useAnimatedStyle(() => {
-      const opacity = interpolate(
-        position.value,
-        [0, snapPoints.length - 1],
-        [1, 0],
-        Extrapolation.CLAMP
-      );
+      const opacity = position.value === snapPoints.length - 1 ? 0 : 1;
+
+      return {
+        opacity: withTiming(opacity), // Use arrowUpOpacity animated value here
+      };
+    });
+
+    const textStyle = useAnimatedStyle(() => {
+      const opacity = position.value === snapPoints.length - 1 ? 0 : 1;
 
       return {
         opacity: withTiming(opacity), // Use arrowUpOpacity animated value here
@@ -343,12 +162,7 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
     });
 
     const arrowDownStyle = useAnimatedStyle(() => {
-      const opacity = interpolate(
-        position.value,
-        [snapPoints.length - 1, 0],
-        [1, 0],
-        Extrapolation.CLAMP
-      );
+      const opacity = position.value === 0 ? 0 : 1;
 
       return {
         opacity: withTiming(opacity), // Use arrowUpOpacity animated value here
@@ -388,7 +202,7 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
                 </Animated.View>
               </View>
             </View>
-            <Animated.View style={[arrowUpStyle]}>{children}</Animated.View>
+            <Animated.View style={[textStyle]}>{children}</Animated.View>
           </View>
         </Animated.View>
       </GestureDetector>

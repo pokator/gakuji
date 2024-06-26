@@ -1,7 +1,3 @@
-//Create an individual card component, containing an Artist, Song Title, and Album Cover
-
-// Path: Components/Card.tsx
-
 import React from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
 

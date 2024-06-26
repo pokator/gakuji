@@ -5,12 +5,19 @@ import React, {
   useCallback,
   useLayoutEffect,
 } from "react";
-import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
 import SegmentedControl from "./SegmentedControl";
 import { ClickableText } from "./LyricsText";
 import KanjiSheet, { BottomSheetRefProps } from "./BottomDrawer";
 import { IconButton } from "react-native-paper";
-import { FileEdit } from "@tamagui/lucide-icons";
+import { Bookmark, FileEdit } from "@tamagui/lucide-icons";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -580,8 +587,40 @@ const hiraganaLyrics = [
 
 export function LyricsView({ route, navigation }) {
   const { artist, title } = route.params;
+
   const [kanjiActive, setKanjiActive] = useState(true);
-  const [definition, setDefinition] = useState("");
+
+  const [definition, setDefinition] = useState("invincible");
+  const [word, setWord] = useState("無敵");
+  const [furigana, setFurigana] = useState("むてき");
+  const [romaji, setRomaji] = useState("muteki");
+  const [kanjiList, setKanjiList] = useState([
+    {
+      kanji: "無",
+      onyomi: {
+        reading: "ム",
+        romaji: "mu",
+      },
+      kunyomi: {
+        reading: "ない",
+        romaji: "nai",
+      },
+      meanings: ["nothing", "naught", "nil", "zero"],
+    },
+    {
+      kanji: "敵",
+      onyomi: {
+        reading: "テキ",
+        romaji: "teki",
+      },
+      kunyomi: {
+        reading: "かたき",
+        romaji: "kataki",
+      },
+      meanings: ["enemy", "foe", "opponent"],
+    },
+  ]);
+
   const pagerRef = useRef<ScrollView>(null);
   const lyricsViewRef = useRef<Animated.ScrollView>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -658,19 +697,8 @@ export function LyricsView({ route, navigation }) {
     };
   });
 
-  const swipeGesture = Gesture.Fling()
-    .onStart(() => {
-      console.log("Swipe started");
-    })
-    .onEnd(() => {
-      console.log("Swipe ended");
-    });
-
   return (
     <View style={styles.container}>
-      {/* <Text>Details Screen</Text>
-      <Text>Artist: {JSON.stringify(artist)}</Text>
-      <Text>Title: {JSON.stringify(title)}</Text> */}
       <View
         style={styles.topRow}
         onLayout={(event) => {
@@ -689,7 +717,6 @@ export function LyricsView({ route, navigation }) {
           />
         </View>
       </View>
-      {/* <Animated.View style={[kanjiActiveStyle]}> */}
       {kanjiActive && (
         <View>
           <Animated.View style={[rScrollViewHeight]} ref={lyricsViewRef}>
@@ -701,16 +728,55 @@ export function LyricsView({ route, navigation }) {
               pagingEnabled
               showsHorizontalScrollIndicator={false}
               // style={styles.scrollView}
-              // contentContainerStyle={{ flex: 1, width: width * 2, height: "100%"}}
+              // contentContainerStyle={{width: width * 2}}
               onScroll={handlePageChange}
               scrollEventThrottle={16}
               ref={pagerRef}
             >
               <View style={styles.page}>
-                <Text>{definition}</Text>
+                <View style={styles.details}>
+                  <Text style={styles.word}>{word}</Text>
+                  <Text style={styles.romaji}>{romaji}</Text>
+                  <Text style={styles.furigana}>{furigana}</Text>
+                  <Text style={styles.definition}>{definition}</Text>
+                </View>
+                {/* Icon button for page 1 */}
+                <TouchableOpacity
+                  onPress={() => console.log("Bookmark page 1")}
+                  style={styles.bookmarkContainer}
+                >
+                  <Bookmark size={24} color="black" />
+                </TouchableOpacity>
               </View>
               <View style={styles.page}>
-                <Text>text 2</Text>
+                <View style={styles.kanjiContainer}>
+                  {kanjiList.map((kanjiItem, index) => (
+                    <View key={index} style={styles.kanjiRow}>
+                      <View style={styles.kanjiItem}>
+                        <Text style={styles.kanji}>{kanjiItem.kanji}</Text>
+                        <Text style={styles.onyomi}>
+                          Onyomi: {kanjiItem.onyomi.reading} (
+                          {kanjiItem.onyomi.romaji})
+                        </Text>
+                        <Text style={styles.kunyomi}>
+                          Kunyomi: {kanjiItem.kunyomi.reading} (
+                          {kanjiItem.kunyomi.romaji})
+                        </Text>
+                        <Text style={styles.meanings}>
+                          Meanings: {kanjiItem.meanings.join(", ")}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() =>
+                          console.log(`Bookmark ${kanjiItem.kanji}`)
+                        }
+                        style={styles.bookmarkContainer}
+                      >
+                        <Bookmark size={24} color="black" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
               </View>
             </ScrollView>
           </KanjiSheet>
@@ -736,9 +802,9 @@ const styles = StyleSheet.create({
   },
   page: {
     width: width,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#fff",
+    flexDirection: "row",
+    alignItems: "flex-start",
   },
   text: {
     marginLeft: 16,
@@ -767,9 +833,6 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   scrollView: {
-    flex: 1,
-    width: width * 2,
-    height: "100%",
     backgroundColor: "red",
   },
   topRow: {
@@ -777,5 +840,68 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
+  },
+  bookmarkContainer: {
+    flex: 1,
+    // justifyContent: "center",
+    alignItems: "flex-end",
+    // alignContent: "center",
+    marginRight: 20,
+  },
+  details: {
+    flex: 5,
+    justifyContent: "center",
+    alignItems: "flex-start",
+    marginLeft: 20,
+  },
+  word: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  romaji: {
+    fontSize: 18,
+    color: "gray",
+    marginBottom: 4,
+  },
+  furigana: {
+    fontSize: 18,
+    color: "gray",
+    marginBottom: 16,
+  },
+  definition: {
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  kanjiContainer: {
+    flex: 5,
+    justifyContent: "center",
+    alignItems: "flex-start",
+    marginLeft: 20,
+  },
+  kanjiRow:{
+    flexDirection: "row",
+    alignItems: "flex-start",
+    // justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  kanjiItem: {
+    marginBottom: 20,
+  },
+  kanji: {
+    fontSize: 30,
+    fontWeight: "bold",
+  },
+  onyomi: {
+    fontSize: 18,
+    color: "gray",
+  },
+  kunyomi: {
+    fontSize: 18,
+    color: "gray",
+  },
+  meanings: {
+    fontSize: 16,
+    color: "black",
   },
 });
