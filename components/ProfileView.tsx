@@ -1,25 +1,53 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-// import { useAuth } from "@clerk/clerk-expo";
+
+import { supabase } from "../lib/supabase";
 
 export function ProfilePage({ navigation }: { navigation: any }) {
-  const username = "johndoe";
-  const name = "John Doe";
-  const email = "john.doe@johndoe.doe";
-  const bio = "I am a person who likes to listen to music.";
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // const { isLoaded, signOut } = useAuth();
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setLoading(true);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        setProfile(user);
+      } else {
+        console.log("No user found");
+      }
+      setLoading(false);
+    };
 
-  // if (!isLoaded) {
-  //   return null;
-  // }
+    fetchProfile();
+  }, []);
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error logging out:", error.message);
+    } else {
+      console.log("User signed out successfully");
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#007bff" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -27,25 +55,26 @@ export function ProfilePage({ navigation }: { navigation: any }) {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.profileInfo}>
-          <View style={styles.infoItem}>
-            <Text style={styles.label}>Username</Text>
-            <Text style={styles.value}>{username}</Text>
+        {profile && (
+          <View style={styles.profileInfo}>
+            <View style={styles.infoItem}>
+              <Text style={styles.label}>Username</Text>
+              <Text style={styles.value}>{profile.username}</Text>
+            </View>
+            {/* <View style={styles.infoItem}>
+              <Text style={styles.label}>Name</Text>
+              <Text style={styles.value}>{profile.name}</Text>
+            </View> */}
+            <View style={styles.infoItem}>
+              <Text style={styles.label}>Email</Text>
+              <Text style={styles.value}>{profile.email}</Text>
+            </View>
+            {/* <View style={styles.infoItem}>
+              <Text style={styles.label}>Bio</Text>
+              <Text style={[styles.value, styles.bio]}>{profile.bio}</Text>
+            </View> */}
           </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.label}>Name</Text>
-            <Text style={styles.value}>{name}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.label}>Email</Text>
-            <Text style={styles.value}>{email}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.label}>Bio</Text>
-            <Text style={[styles.value, styles.bio]}>{bio}</Text>
-          </View>
-        </View>
-        {/* Action buttons */}
+        )}
         <View style={styles.actionButtons}>
           <TouchableOpacity
             style={styles.actionButton}
@@ -61,9 +90,7 @@ export function ProfilePage({ navigation }: { navigation: any }) {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionButton, styles.logoutButton]}
-            onPress={() => {
-              // signOut();
-            }}
+            onPress={signOut}
           >
             <Feather name="log-out" size={24} color="red" />
           </TouchableOpacity>
@@ -82,7 +109,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 40,
-    paddingBottom: 20, // Adjusted paddingBottom to leave space for buttons
+    paddingBottom: 20,
   },
   profileInfo: {
     backgroundColor: "#f9f9f9",
@@ -134,6 +161,12 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     borderColor: "red",
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
 });
 

@@ -594,6 +594,7 @@ export function LyricsView({ route, navigation }) {
   const [word, setWord] = useState("無敵");
   const [furigana, setFurigana] = useState("むてき");
   const [romaji, setRomaji] = useState("muteki");
+  const [partOfSpeech, setPartOfSpeech] = useState("adjective");
   const [kanjiList, setKanjiList] = useState([
     {
       kanji: "無",
@@ -736,6 +737,7 @@ export function LyricsView({ route, navigation }) {
               <View style={styles.page}>
                 <View style={styles.details}>
                   <Text style={styles.word}>{word}</Text>
+                  <Text style={styles.definition}>{partOfSpeech}</Text>
                   <Text style={styles.romaji}>{romaji}</Text>
                   <Text style={styles.furigana}>{furigana}</Text>
                   <Text style={styles.definition}>{definition}</Text>

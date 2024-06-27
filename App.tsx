@@ -5,11 +5,11 @@ import { Animated, SafeAreaView } from "react-native";
 import { Popular } from "./components/Popular";
 import { Saved } from "./components/Saved";
 import { createStackNavigator } from "@react-navigation/stack";
-import { LyricsView } from "./components/LyricsView";
+import { LyricsView } from "./components/lyrics_page/LyricsView";
 import { TamaguiProvider } from "tamagui";
 import config from "./tamagui.config";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { LyricsEntryScreen } from "./components/LyricEntry";
+import { LyricsEntryScreen } from "./components/new_entry/LyricEntry";
 import { KanjiView } from "./components/AllKanjiListTab";
 // import { ProfilePage } from "./components/ProfileView";
 import {
@@ -18,39 +18,17 @@ import {
   NotebookText,
   SquareUserRound,
 } from "@tamagui/lucide-icons";
-import { KanjiListView } from "./components/KanjiList";
-import { IndividualKanjiView } from "./components/IndividualKanjiPage";
-import { ClerkProvider, SignedIn, SignedOut } from "@clerk/clerk-expo";
-import Constants from "expo-constants";
-import * as SecureStore from "expo-secure-store";
-import SignUpScreen from "./components/SignUpScreen";
+import { KanjiListView } from "./components/kanji_page/KanjiList";
+import { IndividualKanjiView } from "./components/kanji_page/IndividualKanjiPage";
 import ProfilePage from "./components/ProfileView";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "./lib/supabase";
-import Auth from "./components/Auth";
-// import SignInScreen from "./components/SignInScreen";
+import Auth from "./components/Authentication/Auth";
 
 const Tab = createBottomTabNavigator();
 const SavedStack = createStackNavigator();
 const PopularStack = createStackNavigator();
 const GeneralStack = createStackNavigator();
-
-// const tokenCache = {
-//   async getToken(key: string) {
-//     try {
-//       return SecureStore.getItemAsync(key);
-//     } catch (err) {
-//       return null;
-//     }
-//   },
-//   async saveToken(key: string, value: string) {
-//     try {
-//       return SecureStore.setItemAsync(key, value);
-//     } catch (err) {
-//       return;
-//     }
-//   },
-// };
 
 // Stack navigator for the Saved tab
 function SavedStackScreen() {
@@ -79,7 +57,7 @@ function PopularStackScreen() {
   );
 }
 
-function TabNavigationScreen(session: Session) {
+function TabNavigationScreen() {
   return (
     <Tab.Navigator
       screenOptions={{
@@ -198,80 +176,48 @@ export default function App() {
   {
     /* <Account key={session.user.id} session={session} /> */
   }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <TamaguiProvider config={config}>
-        {/* {session && session.user ? ( */}
         <NavigationContainer>
-          {/* <ClerkProvider
-            publishableKey={Constants.expoConfig?.extra?.clerkPublishableKey}
-            tokenCache={tokenCache}
-          > */}
-          {/* <SafeAreaView> */}
-          {/* <SignedIn> */}
-          <GeneralStack.Navigator
-            screenOptions={{
-              headerTitle: headerText,
-              headerTitleStyle: { opacity: fadeAnim, fontSize: 24 },
-              headerTitleAlign: "center",
-            }}
-          >
-            <GeneralStack.Screen
-              name="Home"
-              component={TabNavigationScreen}
-              initialParams={{ session: session }}
-            />
-            <GeneralStack.Screen name="LyricsView" component={LyricsView} />
-            <GeneralStack.Screen
-              name="LyricsEntry"
-              component={LyricsEntryScreen}
-              listeners={({ navigation }) => ({
-                focus: (e) => {
-                  navigation.setOptions({
-                    headerTitle: "New Song",
-                  });
-                },
-              })}
-            />
-            <GeneralStack.Screen
-              name="KanjiListView"
-              component={KanjiListView}
-            />
-            <GeneralStack.Screen
-              name="IndividualKanjiView"
-              component={IndividualKanjiView}
-            />
-          </GeneralStack.Navigator>
-          {/* </SignedIn> */}
-          {/* <SignedOut> */}
-          {/* <GeneralStack.Navigator
-                screenOptions={{
-                  headerShown: false,
-                  headerTitle: headerText,
-                  headerTitleStyle: { opacity: fadeAnim, fontSize: 24 },
-                  headerTitleAlign: "center",
-                }}
-                initialRouteName="Sign In Screen"
-              > */}
-          {/* <GeneralStack.Screen
-                  name="Sign In Screen"
-                  component={SignInScreen}
-                />
-                <GeneralStack.Screen
-                  name="Sign Up Screen"
-                  component={SignUpScreen}
-                /> */}
-          {/* </GeneralStack.Navigator> */}
-          {/* <SafeAreaView> */}
-          {/* <SignUpScreen /> */}
-          {/* </SafeAreaView> */}
-          {/* </SignedOut> */}
-          {/* </SafeAreaView> */}
-          {/* </ClerkProvider> */}
+          {session && session.user ? (
+            <GeneralStack.Navigator
+              screenOptions={{
+                headerTitle: headerText,
+                headerTitleStyle: { opacity: fadeAnim, fontSize: 24 },
+                headerTitleAlign: "center",
+              }}
+            >
+              <GeneralStack.Screen
+                name="Home"
+                component={TabNavigationScreen}
+              />
+              <GeneralStack.Screen name="LyricsView" component={LyricsView} />
+              <GeneralStack.Screen
+                name="LyricsEntry"
+                component={LyricsEntryScreen}
+                listeners={({ navigation }) => ({
+                  focus: (e) => {
+                    navigation.setOptions({
+                      headerTitle: "New Song",
+                    });
+                  },
+                })}
+              />
+              <GeneralStack.Screen
+                name="KanjiListView"
+                component={KanjiListView}
+              />
+              <GeneralStack.Screen
+                name="IndividualKanjiView"
+                component={IndividualKanjiView}
+              />
+            </GeneralStack.Navigator>
+          ) : (
+            <Auth />
+          )}
         </NavigationContainer>
-        {/* ) : (
-          <Auth />
-        )} */}
       </TamaguiProvider>
     </GestureHandlerRootView>
   );
