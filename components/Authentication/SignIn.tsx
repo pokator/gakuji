@@ -66,7 +66,7 @@ export default function SignIn({ navigation }) {
       <View style={styles.verticallySpaced}>
         <Button
           variant="outlined"
-          onPress={() => navigation.navigate("SignIn")}
+          onPress={() => navigation.navigate("SignUp")}
         >
           Don't have an account? Sign up
         </Button>

@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { Button, XStack, YStack } from "tamagui";
 
 import { supabase } from "../lib/supabase";
 
@@ -75,26 +76,46 @@ export function ProfilePage({ navigation }: { navigation: any }) {
             </View> */}
           </View>
         )}
-        <View style={styles.actionButtons}>
-          <TouchableOpacity
+        {/* style={styles.actionButtons} */}
+        <YStack >
+          {/* <TouchableOpacity
             style={styles.actionButton}
             onPress={() => console.log("Edit Profile pressed")}
           >
-            <Feather name="edit" size={24} color="#007bff" />
+            
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => console.log("Settings pressed")}
           >
-            <Feather name="settings" size={24} color="#007bff" />
+            
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionButton, styles.logoutButton]}
             onPress={signOut}
           >
-            <Feather name="log-out" size={24} color="red" />
-          </TouchableOpacity>
-        </View>
+            
+          </TouchableOpacity> */}
+          <XStack marginBottom={10}>
+            <Button icon={<Feather name="edit" size={24} color="#007bff" />} flex={1}>
+              Edit Profile
+            </Button>
+            <Button
+              icon={<Feather name="settings" size={24} color="#007bff" />}
+              flex={1}
+              marginLeft={10}
+            >
+              Settings
+            </Button>
+          </XStack>
+          <Button
+            icon={<Feather name="log-out" size={24} color="red" />}
+            variant="outlined"
+            onPress={signOut}
+          >
+            Log out
+          </Button>
+        </YStack>
       </ScrollView>
     </View>
   );
