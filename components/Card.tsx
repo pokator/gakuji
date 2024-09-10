@@ -41,11 +41,11 @@ export function Card({ song }: { song: any }) {
     <View style={styles.card}>
       <Image
         style={styles.albumCover}
-        source={{ uri: song.albumCover }}
+        source={{ uri: song["SongData"]["image_url"] }}
       />
       <View style={styles.textContainer}>
-        <Text style={styles.title}>{song.title}</Text>
-        <Text style={styles.artist}>{song.artist}</Text>
+        <Text style={styles.title}>{song["title"]}</Text>
+        <Text style={styles.artist}>{song["artist"]}</Text>
       </View>
     </View>
   );

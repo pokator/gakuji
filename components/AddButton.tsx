@@ -25,7 +25,11 @@ const AddButton = ({navigation}) => {
     // Do something with the URI
     console.log("Submitted URI:", uri);
     // You can add more logic here, like sending the URI to an API or storing it locally
+
+
+
     // After handling the URI, close the modal
+    setURI('');
     setModalOpen(false);
     navigation.getParent().navigate("LyricsEntry", {fromLink: true});
   };

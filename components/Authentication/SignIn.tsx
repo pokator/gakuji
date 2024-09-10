@@ -24,6 +24,9 @@ export default function SignIn({ navigation }) {
       password: password,
     });
 
+    const session = (await supabase.auth.getSession()).data.session
+    const accessToken = session?.access_token
+
     if (error) Alert.alert(error.message);
     setLoading(false);
   }

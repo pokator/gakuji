@@ -14,6 +14,7 @@
     "@expo/metro-runtime": "~3.2.1",
     "@firebase/app": "^0.10.3",
     "@firebase/auth": "^1.7.3",
+    "@hey-api/client-fetch": "^0.2.4",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-firebase/app": "^19.2.2",
     "@react-native-firebase/auth": "^19.2.2",
@@ -24,6 +25,7 @@
     "@supabase/supabase-js": "^2.43.6",
     "@tamagui/config": "^1.97.1",
     "@tamagui/lucide-icons": "^1.97.1",
+    "axios": "^1.7.5",
     "expo": "~51.0.2",
     "expo-secure-store": "^13.0.1",
     "expo-status-bar": "~1.12.1",
@@ -44,6 +46,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@hey-api/openapi-ts": "^0.52.11",
     "@types/react": "~18.2.45"
   },
   "private": true

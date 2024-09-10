@@ -11,7 +11,6 @@ import config from "./tamagui.config";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { LyricsEntryScreen } from "./components/new_entry/LyricEntry";
 import { KanjiView } from "./components/AllKanjiListTab";
-// import { ProfilePage } from "./components/ProfileView";
 import {
   Globe,
   LibraryBig,
