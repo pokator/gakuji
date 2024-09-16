@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Searchbar } from "react-native-paper";
+import { APIClient } from "../api-client/api"; // API client initialized
+import { supabase } from "../lib/supabase"; // Supabase client initialized
 
 interface CardProps {
   id: string;
@@ -19,7 +21,7 @@ interface CardProps {
   navigation: any;
 }
 
-const Card: React.FC<CardProps> = ({id, title, subtitle, type, navigation }) => {
+const Card: React.FC<CardProps> = ({ id, title, subtitle, type, navigation }) => {
   const handlePress = () => {
     console.log(`Card with title: ${title} was pressed`);
     navigation.navigate("KanjiListView", {
@@ -43,26 +45,48 @@ const Card: React.FC<CardProps> = ({id, title, subtitle, type, navigation }) => 
 };
 
 interface DataItem {
-  id: string;
-  title: string;
-  subtitle: string;
+  list_name: string;
   type: string;
+  id: string;
 }
-
-const dummyData: DataItem[] = [
-  { id: "1", title: "All Kanji", subtitle: "123 Kanji", type: "漢字" },
-  { id: "2", title: "Card 2", subtitle: "Subtitle 2", type: "言葉" },
-  { id: "3", title: "Card 3", subtitle: "Subtitle 3", type: "漢字" },
-  { id: "4", title: "Card 4", subtitle: "Subtitle 4", type: "言葉" },
-  // Add more dummy data as needed
-];
 
 export function KanjiView({ navigation }: { navigation: any }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [lists, setLists] = useState<DataItem[] | null>([]); // Ensure lists is an array or null
 
-  const filteredData = dummyData.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Initialize API client with the access token
+  const initializeApiClient = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      const apiClient = new APIClient(session.access_token);
+      return apiClient;
+    }
+    return null;
+  };
+
+  const onGetList = async () => {
+    try {
+      const apiClient = await initializeApiClient();
+      if (apiClient) {
+        const response = await apiClient.getLists();
+        setLists(response["data"]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch songs:", error);
+    }
+  };
+
+  // Fetch the songs when the component mounts
+  useEffect(() => {
+    onGetList();
+  }, []);
+
+  // Ensure lists is not null before filtering
+  const filteredData = lists
+    ? lists.filter((item) =>
+        item.list_name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
 
   return (
     <View style={styles.container}>
@@ -72,21 +96,26 @@ export function KanjiView({ navigation }: { navigation: any }) {
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
-      <FlatList
-        contentContainerStyle={styles.listContainer}
-        data={filteredData}
-        numColumns={2}
-        renderItem={({ item }) => (
-          <Card
-            id={item.id}
-            title={item.title}
-            subtitle={item.subtitle}
-            type={item.type}
-            navigation={navigation}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-      />
+      {/* Show a loading message if lists is null */}
+      {lists === null ? (
+        <Text>Loading...</Text>
+      ) : (
+        <FlatList
+          contentContainerStyle={styles.listContainer}
+          data={filteredData}
+          numColumns={2}
+          renderItem={({ item }) => (
+            <Card
+              id={item.id}
+              title={item.list_name}
+              subtitle={"asdf"}
+              type={item.type}
+              navigation={navigation}
+            />
+          )}
+          keyExtractor={(item) => item.id}
+        />
+      )}
     </View>
   );
 }
@@ -146,5 +175,3 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
-
-// export default KanjiView;

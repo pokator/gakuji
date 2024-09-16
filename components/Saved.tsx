@@ -62,7 +62,7 @@ export function Saved({ navigation }: { navigation: any }) {
                 })
               }
             >
-              <Card song={item} />
+              <Card title={item["title"]} artist={item["artist"]} uri={item["SongData"]["image_url"]} />
             </TouchableOpacity>
           )}
           keyExtractor={(item) => `${item["title"]}-${item["artist"]}`}

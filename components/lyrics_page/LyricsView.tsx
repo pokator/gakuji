@@ -132,21 +132,24 @@ export function LyricsView({ route, navigation }) {
     return kanjiDetails;
   }
 
-  const onPress = useCallback((word: React.SetStateAction<string>) => {
-    const isClosed = ref?.current?.zeroPosition();
-    if (isClosed) {
-      ref?.current?.openBottomSheet(1);
-    }
-    const wordObj = song?.["word_mapping"][word][0];
-    setWord(word);
-    setFurigana(wordObj.furigana);
-    setRomaji(wordObj.romaji);
-    setPartOfSpeech(wordObj.definitions?.[0]?.pos?.join(", ") || ""); // Access pos safely
-    setDefinition(wordObj.definitions?.[0]?.definition?.join(", ") || ""); // Access definition safely
+  const onPress = useCallback(
+    (word: React.SetStateAction<string>) => {
+      const isClosed = ref?.current?.zeroPosition();
+      if (isClosed) {
+        ref?.current?.openBottomSheet(1);
+      }
+      const wordObj = song?.["word_mapping"][word][0];
+      setWord(word);
+      setFurigana(wordObj.furigana);
+      setRomaji(wordObj.romaji);
+      setPartOfSpeech(wordObj.definitions?.[0]?.pos?.join(", ") || ""); // Access pos safely
+      setDefinition(wordObj.definitions?.[0]?.definition?.join(", ") || ""); // Access definition safely
 
-    const kanjiList = parseKanji(word, song?.["kanji_data"]);
-    setKanjiList(kanjiList);
-  }, [song]);
+      const kanjiList = parseKanji(word, song?.["kanji_data"]);
+      setKanjiList(kanjiList);
+    },
+    [song]
+  );
 
   useEffect(() => {
     const fetchSong = async () => {

@@ -115,9 +115,30 @@ export class APIClient {
     }
   }
 
+  public async getWord(idseq: string) {
+    const response = await this.axiosInstance.get("/song/get-word", {
+      params: { idseq },
+    });
+    return response.data;
+  }
+
   // Lists endpoints
   public async getLists() {
     const response = await this.axiosInstance.get("/lists/get-lists");
+    return response.data;
+  }
+
+  public async getAList(listId: string) {
+    const response = await this.axiosInstance.get("/lists/get-a-list", {
+      params: { list_id: listId },
+    });
+    return response.data;
+  }
+
+  public async getTypeLists(type: string) {
+    const response = await this.axiosInstance.get("/lists/get-type-lists", {
+      params: { type },
+    });
     return response.data;
   }
 
@@ -138,6 +159,27 @@ export class APIClient {
 
   public async addWordToList(wordData: WordAdd) {
     const response = await this.axiosInstance.post("/lists/add-word", wordData);
+    return response.data;
+  }
+
+  public async deleteWordFromList(word: string, listId: string) {
+    const response = await this.axiosInstance.delete("/lists/delete-word", {
+      params: { word, list_id: listId },
+    });
+    return response.data;
+  }
+
+  public async checkAllLists(word: string, type: string) {
+    const response = await this.axiosInstance.get("/lists/check-all-lists", {
+      params: { word, type },
+    });
+    return response.data;
+  }
+
+  public async getWordData(value: string) {
+    const response = await this.axiosInstance.get("/lists/get-word-data", {
+      params: { value },
+    });
     return response.data;
   }
 }

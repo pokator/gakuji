@@ -36,16 +36,16 @@ const styles = StyleSheet.create({
   },
 });
 
-export function Card({ song }: { song: any }) {
+export function Card({ title, artist, uri }: { title: string, artist: string, uri: string }) {
   return (
     <View style={styles.card}>
       <Image
         style={styles.albumCover}
-        source={{ uri: song["SongData"]["image_url"] }}
+        source={{ uri: uri }}
       />
       <View style={styles.textContainer}>
-        <Text style={styles.title}>{song["title"]}</Text>
-        <Text style={styles.artist}>{song["artist"]}</Text>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.artist}>{artist}</Text>
       </View>
     </View>
   );
