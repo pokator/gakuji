@@ -182,4 +182,11 @@ export class APIClient {
     });
     return response.data;
   }
+
+  public async getImageData(title: string, artist: string) {
+    const response = await this.axiosInstance.get("/song/get-image", {
+      params: { title, artist },
+    });
+    return response.data;
+  }
 }
