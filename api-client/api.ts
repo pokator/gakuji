@@ -14,6 +14,8 @@ interface User {
 
 interface SpotifyAdd {
   uri?: string | null;
+  refresh_token?: string | null;
+  access_token?: string | null;
 }
 
 interface ManualAdd {
@@ -23,7 +25,7 @@ interface ManualAdd {
   uuid?: string | null;
 }
 
-interface WordAdd {
+export interface WordAdd {
   word: string;
   title: string;
   artist: string;
@@ -32,7 +34,7 @@ interface WordAdd {
 
 export interface SongData {
   lyrics: string[][];
-  hiragana_lyrics: string;
+  hiragana_lyrics: string[];
   word_mapping: any; // Adjust the type based on the actual structure
   kanji_data: any; 
 }

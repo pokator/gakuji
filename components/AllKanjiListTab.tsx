@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import {
   View,
   Text,
@@ -53,6 +53,7 @@ interface DataItem {
 export function KanjiView({ navigation }: { navigation: any }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [lists, setLists] = useState<DataItem[] | null>([]); // Ensure lists is an array or null
+  const [lastFetchedList, setLastFetchedList] = useState<DataItem[] | null>(null);
 
   // Initialize API client with the access token
   const initializeApiClient = async () => {
@@ -69,7 +70,11 @@ export function KanjiView({ navigation }: { navigation: any }) {
       const apiClient = await initializeApiClient();
       if (apiClient) {
         const response = await apiClient.getLists();
-        setLists(response["data"]);
+        if (JSON.stringify(response["data"]) !== JSON.stringify(lastFetchedList)) {
+          setLastFetchedList(response["data"]);
+          setLists(response["data"]);
+        }
+        // setLists(response["data"]);
       }
     } catch (error) {
       console.error("Failed to fetch songs:", error);
@@ -77,7 +82,7 @@ export function KanjiView({ navigation }: { navigation: any }) {
   };
 
   // Fetch the songs when the component mounts
-  useEffect(() => {
+  useLayoutEffect(() => {
     onGetList();
   }, []);
 

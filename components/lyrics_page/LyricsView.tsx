@@ -12,11 +12,12 @@ import {
   ScrollView,
   Dimensions,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import SegmentedControl from "./SegmentedControl";
 import { ClickableText } from "./LyricsText";
 import KanjiSheet, { BottomSheetRefProps } from "./BottomDrawer";
-import { IconButton } from "react-native-paper";
+import { IconButton, Portal } from "react-native-paper";
 import { Bookmark, FileEdit } from "@tamagui/lucide-icons";
 import Animated, {
   useAnimatedStyle,
@@ -27,6 +28,7 @@ import { HiraganaText } from "./HiraganaText";
 import { Gesture } from "react-native-gesture-handler";
 import { APIClient, SongData } from "../../api-client/api"; // API client initialized
 import { supabase } from "../../lib/supabase"; // Supabase client initialized
+import ModalComponent from "./ListModal";
 
 const { width } = Dimensions.get("window");
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -55,6 +57,7 @@ export function LyricsView({ route, navigation }) {
   const [furigana, setFurigana] = useState("むてき");
   const [romaji, setRomaji] = useState("muteki");
   const [partOfSpeech, setPartOfSpeech] = useState("adjective");
+  const [idseq, setIdseq] = useState("#11111");
   const [kanjiList, setKanjiList] = useState<KanjiInfo[]>([]);
 
   const pagerRef = useRef<ScrollView>(null);
@@ -63,6 +66,14 @@ export function LyricsView({ route, navigation }) {
   const scrollViewHeight = useSharedValue(0);
   const [topRowHeight, setTopRowHeight] = useState(0);
   const kanjiActiveShared = useSharedValue(kanjiActive ? 1 : 0);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedKanji, setSelectedKanji] = useState<string>("");
+
+  const openModal = (kanji: string) => {
+    setSelectedKanji(kanji);
+    setModalVisible(true);
+  };
 
   useEffect(() => {
     kanjiActiveShared.value = withTiming(kanjiActive ? 1 : 0, {
@@ -138,11 +149,15 @@ export function LyricsView({ route, navigation }) {
       if (isClosed) {
         ref?.current?.openBottomSheet(1);
       }
+      console.log(word);
+      console.log(song?.["word_mapping"][word]);
       const wordObj = song?.["word_mapping"][word][0];
       setWord(word);
       setFurigana(wordObj.furigana);
       setRomaji(wordObj.romaji);
       setPartOfSpeech(wordObj.definitions?.[0]?.pos?.join(", ") || ""); // Access pos safely
+      setIdseq(wordObj.idseq);
+      // console.log(wordObj.definitions?.size);
       setDefinition(wordObj.definitions?.[0]?.definition?.join(", ") || ""); // Access definition safely
 
       const kanjiList = parseKanji(word, song?.["kanji_data"]);
@@ -201,6 +216,10 @@ export function LyricsView({ route, navigation }) {
     };
   });
 
+  //present a modal with a list of checkboxes and a submit and cancel button
+
+
+
   return (
     <View style={styles.container}>
       <View
@@ -244,7 +263,7 @@ export function LyricsView({ route, navigation }) {
                   <Text style={styles.definition}>{definition}</Text>
                 </View>
                 <TouchableOpacity
-                  onPress={() => console.log("Bookmark page 1")}
+                  onPress={() => openModal(idseq)}
                   style={styles.bookmarkContainer}
                 >
                   <Bookmark size={24} color="black" />
@@ -267,9 +286,7 @@ export function LyricsView({ route, navigation }) {
                         </Text>
                       </View>
                       <TouchableOpacity
-                        onPress={() =>
-                          console.log(`Bookmark ${kanjiItem.kanji}`)
-                        }
+                        onPress={() => openModal(kanjiItem.kanji)}
                         style={styles.bookmarkContainer}
                       >
                         <Bookmark size={24} color="black" />
@@ -287,6 +304,14 @@ export function LyricsView({ route, navigation }) {
           <HiraganaText lyrics={song.hiragana_lyrics} />
         </ScrollView>
       )}
+      <ModalComponent
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        term={selectedKanji}
+        activeIndex={activeIndex}
+        title={title}
+        artist={artist}
+      />
     </View>
   );
 }

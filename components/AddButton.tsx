@@ -1,11 +1,21 @@
-import React, { useState } from "react";
-import { StyleSheet, Modal, View, TextInput, Button, Text, TouchableOpacity } from "react-native";
-import { FAB, Portal } from "react-native-paper";
+import React, { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  Modal,
+  View,
+  TextInput,
+  Text,
+  TouchableOpacity,
+} from "react-native";
+import { FAB, Portal, Button } from "react-native-paper";
+import { APIClient } from "../api-client/api"; // API client initialized
+import { supabase } from "../lib/supabase"; // Supabase client initialized
 
-const AddButton = ({navigation}) => {
+const AddButton = ({ navigation, refreshList }) => {
   const [open, setOpen] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [uri, setURI] = useState('');
+  const [uri, setURI] = useState("");
 
   const onStateChange = ({ open }) => setOpen(open);
 
@@ -14,24 +24,48 @@ const AddButton = ({navigation}) => {
   };
 
   const handleManualEntryPress = () => {
-    navigation.getParent().navigate("LyricsEntry", {fromLink: false});
+    navigation.getParent().navigate("LyricsEntry", { fromLink: false });
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
   };
 
-  const handleSubmit = () => {
+  const initializeApiClient = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      const apiClient = new APIClient(session.access_token);
+      return apiClient;
+    }
+    return null;
+  };
+
+  const handleSubmit = async () => {
     // Do something with the URI
     console.log("Submitted URI:", uri);
     // You can add more logic here, like sending the URI to an API or storing it locally
-
-
+    // Add your logic here
+    try {
+      const apiClient = await initializeApiClient();
+      if (apiClient) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const response = await apiClient.addSongSpot({ uri: uri, refresh_token: session?.refresh_token, access_token: session?.access_token });
+        console.log(response);
+      }
+    } catch (error) {
+      console.error("Failed to fetch songs:", error);
+    }
 
     // After handling the URI, close the modal
-    setURI('');
+    setSubmitted(true);
+    setURI("");
+    refreshList();
+    // navigation.getParent().navigate("LyricsEntry", {fromLink: true});
+  };
+
+  const onReturn = () => {
     setModalOpen(false);
-    navigation.getParent().navigate("LyricsEntry", {fromLink: true});
+    setSubmitted(false);
   };
 
   return (
@@ -45,21 +79,45 @@ const AddButton = ({navigation}) => {
         >
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>From Link</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter URI"
-                value={uri}
-                onChangeText={(text) => setURI(text)}
-              />
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button} onPress={handleCloseModal}>
-                  <Text style={styles.buttonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.button, {backgroundColor: '#007bff'}]} onPress={handleSubmit}>
-                  <Text style={[styles.buttonText, {color: '#fff'}]}>Submit</Text>
-                </TouchableOpacity>
-              </View>
+              {submitted ? (
+                <>
+                  <Text>
+                    Song Submitted! It may take up to a minute for the result to
+                    arrive.
+                  </Text>
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity onPress={onReturn} style={styles.button}>
+                      <Text>Return</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.modalTitle}>From Link</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter URI"
+                    value={uri}
+                    onChangeText={(text) => setURI(text)}
+                  />
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={handleCloseModal}
+                    >
+                      <Text style={styles.buttonText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: "#007bff" }]}
+                      onPress={handleSubmit}
+                    >
+                      <Text style={[styles.buttonText, { color: "#fff" }]}>
+                        Submit
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
             </View>
           </View>
         </Modal>
@@ -112,7 +170,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     elevation: 5,
-    width: '80%',
+    width: "80%",
   },
   input: {
     height: 40,
@@ -128,9 +186,9 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f0f0f0',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f0f0f0",
     paddingVertical: 12,
     borderRadius: 20,
     marginHorizontal: 5,

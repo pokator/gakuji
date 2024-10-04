@@ -179,7 +179,7 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
           </GestureDetector>
           <View style={{ width: "100%" }}>
             <View style={styles.topContainer}>
-              <Text style={styles.text}>Kanji Details</Text>
+              <Text style={styles.text}>{activeIndex == 0 ? "Word Details" : "Kanji Details"}</Text>
               <View style={styles.dotsContainer}>
                 <Animated.View style={[arrowUpStyle]}>
                   <Dots activeIndex={activeIndex} />

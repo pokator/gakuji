@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   FlatList,
@@ -20,6 +20,7 @@ const styles = StyleSheet.create({
 
 export function Saved({ navigation }: { navigation: any }) {
   const [songs, setSongs] = useState([]);
+  const [lastFetchedSongs, setLastFetchedSongs] = useState([]);
 
   // Initialize API client with the access token
   const initializeApiClient = async () => {
@@ -36,7 +37,12 @@ export function Saved({ navigation }: { navigation: any }) {
       const apiClient = await initializeApiClient();
       if (apiClient) {
         const response = await apiClient.getSongs();
-        setSongs(response);
+
+        // Compare the new response with the current state to avoid unnecessary re-renders
+        if (JSON.stringify(response) !== JSON.stringify(lastFetchedSongs)) {
+          setSongs(response);
+          setLastFetchedSongs(response); // Update the last fetched songs
+        }
       }
     } catch (error) {
       console.error("Failed to fetch songs:", error);
@@ -62,13 +68,19 @@ export function Saved({ navigation }: { navigation: any }) {
                 })
               }
             >
-              <Card title={item["title"]} artist={item["artist"]} uri={item["SongData"]["image_url"]} />
+              <Card
+                title={item["title"]}
+                artist={item["artist"]}
+                uri={item["SongData"]["image_url"]}
+              />
             </TouchableOpacity>
           )}
           keyExtractor={(item) => `${item["title"]}-${item["artist"]}`}
         />
-        <AddButton navigation={navigation} />
+        <AddButton navigation={navigation} refreshList={onGetSongList} />
       </View>
     </PaperProvider>
   );
 }
+
+export default Saved;

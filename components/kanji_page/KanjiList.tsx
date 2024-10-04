@@ -14,8 +14,8 @@ interface KanjiCardProps {
   kanji: string;
   navigation: any;
   type: string;
-  data: any;
-  renderAdditionalContent?: () => React.ReactNode;
+  data: DataItem;
+  renderAdditionalContent: () => React.ReactNode;
 }
 
 const KanjiCard: React.FC<KanjiCardProps> = ({
@@ -37,12 +37,11 @@ const KanjiCard: React.FC<KanjiCardProps> = ({
     <TouchableOpacity style={styles.card} onPress={handlePress}>
       <View style={styles.cardContent}>
         <Text style={styles.kanji}>{kanji}</Text>
-        {renderAdditionalContent && renderAdditionalContent()}
+        {renderAdditionalContent()}
       </View>
     </TouchableOpacity>
   );
 };
-
 
 interface KanjiListProps {
   data: DataItem[];
@@ -54,103 +53,70 @@ interface DataItem {
   artist: string;
   title: string;
   value: string;
-  wordData: any;
+  wordData: {
+    definitions: Array<{ pos: string[]; definition: string[] }>;
+    furigana: string;
+    romaji: string;
+    word: string;
+  };
 }
-
-// const dummyData: DataItem[] = [
-//   {
-//     id: "1",
-//     kanji: "日",
-//     readings: ["にち", "じつ"],
-//     meanings: ["day", "sun"],
-//   },
-//   {
-//     id: "2",
-//     kanji: "月",
-//     readings: ["げつ", "がつ"],
-//     meanings: ["month", "moon"],
-//   },
-//   { id: "3", kanji: "火", readings: ["か"], meanings: ["fire"] },
-//   { id: "4", kanji: "水", readings: ["すい"], meanings: ["water"] },
-//   // Add more dummy data as needed
-// ];
 
 const KanjiList: React.FC<KanjiListProps> = ({ data, navigation, type }) => {
   const renderKanjiCard = (item: DataItem) => {
     const { meanings, readings_kun, readings_on } = item.wordData || {};
 
-    // Get at most two meanings
     const displayedMeanings = meanings ? meanings.slice(0, 2) : [];
-    // Get at most two readings from each type
     const displayedKunReadings = readings_kun ? readings_kun.slice(0, 2) : [];
     const displayedOnReadings = readings_on ? readings_on.slice(0, 2) : [];
 
     return (
       <View>
         <Text>{displayedMeanings.join(", ")}</Text>
-        <Text>{[...displayedKunReadings, ...displayedOnReadings].join(", ")}</Text>
+        <Text>
+          {[...displayedKunReadings, ...displayedOnReadings].join(", ")}
+        </Text>
       </View>
     );
   };
 
   const renderWordCard = (item: DataItem) => {
     const { definitions, furigana, romaji } = item.wordData || {};
-  
-    // Get at most two furigana and two romaji
-    const displayedFurigana = furigana ? furigana.slice(0, 2) : [];
-    const displayedRomaji = romaji ? romaji.slice(0, 2) : [];
-  
-    // Get at most two definitions
-    const displayedDefinitions = definitions ? definitions.slice(0, 2) : [];
-  
+
     return (
       <View>
-        {/* Display definitions */}
-        {displayedDefinitions.map((def: any, index: number) => (
-          <View key={index} style={{ marginBottom: 8 }}>
-            <Text>POS: {def.pos.join(", ")}</Text> {/* Join POS array */}
-            <Text>Definition: {def.definition.join(", ")}</Text> {/* Join definition array */}
-          </View>
-        ))}
-        
-        {/* Display furigana and romaji */}
-        <Text>{[...displayedFurigana, ...displayedRomaji].join(", ")}</Text>
+        {definitions &&
+          definitions.slice(0, 1).map((def, index) => (
+            <View key={index} style={{ marginBottom: 8 }}>
+              <Text>POS: {def.pos.join(", ")}</Text>
+              <Text>Definition: {def.definition.join(", ")}</Text>
+            </View>
+          ))}
+
+        <Text>{[furigana, romaji].filter(Boolean).join(", ")}</Text>
       </View>
     );
   };
-  
 
   return (
     <FlatList
       contentContainerStyle={styles.listContainer}
       data={data}
       numColumns={1}
-      renderItem={({ item }) =>
-        type === "kanji" ? (
-          <KanjiCard
-            kanji={item.value}
-            navigation={navigation}
-            type={type}
-            data={item}
-            renderAdditionalContent={() => renderKanjiCard(item)}
-          />
-        ) : (
-          <KanjiCard
-            kanji={item.value}
-            navigation={navigation}
-            type={type}
-            data={item}
-            renderAdditionalContent={() => renderWordCard(item)}
-          />
-        )
-      }
-      keyExtractor={(item) =>
-        `${item["title"]}-${item["artist"]}-${item["value"]}`
-      }
+      renderItem={({ item }) => (
+        <KanjiCard
+          kanji={type === "kanji" ? item.value : item.wordData.word}
+          navigation={navigation}
+          type={type}
+          data={item}
+          renderAdditionalContent={() =>
+            type === "kanji" ? renderKanjiCard(item) : renderWordCard(item)
+          }
+        />
+      )}
+      keyExtractor={(item) => `${item.title}-${item.artist}-${item.value}`}
     />
   );
 };
-
 
 export function KanjiListView({
   route,
@@ -161,9 +127,8 @@ export function KanjiListView({
 }) {
   const { id, title, type } = route.params;
 
-  const [list, setList] = useState<DataItem[] | null>([]); // Ensure lists is an array or null
+  const [list, setList] = useState<DataItem[]>([]);
 
-  // Initialize API client with the access token
   const initializeApiClient = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.access_token) {
@@ -179,34 +144,38 @@ export function KanjiListView({
       if (apiClient) {
         const response = await apiClient.getAList(id);
         const listData = response["data"];
-  
-        // Fetch word data for each item in the list
+
         const updatedList = await Promise.all(
           listData.map(async (item) => {
-            // Get word data for the item's value
-            const wordData = await apiClient.getWordData(item.value);
-  
-            // Add the word data to the item
-            return {
-              ...item,
-              wordData, // Add wordData to the item
-            };
+            try {
+              const wordData = await apiClient.getWordData(item.value);
+              return {
+                ...item,
+                wordData,
+              };
+            } catch (error) {
+              console.error(
+                `Error fetching word data for item: ${item.value}`,
+                error
+              );
+              return null;
+            }
           })
         );
-  
-        // Update the state with the modified list
-        setList(updatedList);
-  
-        // Log the modified list to the console
-        console.log("Updated list with word data:", updatedList);
+
+        const validList = updatedList.filter(
+          (item): item is DataItem => item !== null
+        );
+        setList(validList);
+
+        console.log("Updated list with word data:", validList);
       }
     } catch (error) {
       console.error("Failed to fetch list or word data:", error);
+      setList([]);
     }
   };
-  
 
-  // Fetch the songs when the component mounts
   useEffect(() => {
     onGetList();
   }, []);
@@ -215,11 +184,11 @@ export function KanjiListView({
     navigation.setOptions({
       headerTitle: `${title}`,
     });
-  }, [navigation]);
+  }, [navigation, title]);
 
   return (
     <View style={styles.container}>
-      <KanjiList data={list} navigation={navigation} type={type}/>
+      <KanjiList data={list} navigation={navigation} type={type} />
     </View>
   );
 }
