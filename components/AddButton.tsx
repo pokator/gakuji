@@ -24,7 +24,7 @@ const AddButton = ({ navigation, refreshList }) => {
   };
 
   const handleManualEntryPress = () => {
-    navigation.getParent().navigate("LyricsEntry", { fromLink: false });
+    navigation.getParent().navigate("LyricsEntry");
   };
 
   const handleCloseModal = () => {
@@ -45,6 +45,7 @@ const AddButton = ({ navigation, refreshList }) => {
     console.log("Submitted URI:", uri);
     // You can add more logic here, like sending the URI to an API or storing it locally
     // Add your logic here
+    setSubmitted(true);
     try {
       const apiClient = await initializeApiClient();
       if (apiClient) {
@@ -57,7 +58,7 @@ const AddButton = ({ navigation, refreshList }) => {
     }
 
     // After handling the URI, close the modal
-    setSubmitted(true);
+    
     setURI("");
     refreshList();
     // navigation.getParent().navigate("LyricsEntry", {fromLink: true});
@@ -127,25 +128,28 @@ const AddButton = ({ navigation, refreshList }) => {
         open={open}
         icon={open ? "close" : "plus"}
         style={styles.fabContainer}
-        rippleColor={"red"}
+        rippleColor={"rgba(0, 0, 0, 0.5)"}
+        
         actions={[
           {
             icon: "star",
             label: "From Link",
             onPress: handleFromLinkPress,
-            labelTextColor: "black",
+            labelTextColor: "white",
           },
           {
             icon: "heart",
             label: "Manual Entry",
             onPress: handleManualEntryPress,
-            labelTextColor: "black",
+            labelTextColor: "white",
           },
         ]}
         onStateChange={onStateChange}
         onPress={() => {
           if (open) {
             // do something if the speed dial is open
+          } else {
+            // do something if the speed dial is closed
           }
         }}
       />
@@ -155,9 +159,7 @@ const AddButton = ({ navigation, refreshList }) => {
 
 const styles = StyleSheet.create({
   fabContainer: {
-    position: "absolute",
-    bottom: -32,
-    right: 0,
+    // backgroundColor: "#007bff",
   },
   modalContainer: {
     flex: 1,

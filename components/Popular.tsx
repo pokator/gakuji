@@ -5,11 +5,12 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { Card } from "./Card"; // Assuming Card component is in a separate file
-import { APIClient } from "../api-client/api"; // API client initialized
-import { supabase } from "../lib/supabase"; // Supabase client initialized
+import { Card } from "./Card";
+import { APIClient } from "../api-client/api";
+import { supabase } from "../lib/supabase";
 
 const styles = StyleSheet.create({
   container: {
@@ -24,73 +25,86 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#f0f0f0",
   },
+  loader: {
+    marginVertical: 16,
+    alignItems: 'center',
+  },
 });
 
-export function Popular({ navigation }: { navigation: any }) {
+export function Popular({ navigation }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [allSongs, setAllSongs] = useState<
-    { id: number; title: string; artist: string; SongData: { image_url: string } }[]
-  >([]);
-  const [filteredData, setFilteredData] = useState<
-    { id: number; title: string; artist: string; SongData: { image_url: string } }[]
-  >([]);
-  const [lastFetchedSongs, setLastFetchedSongs] = useState<
-    { id: number; title: string; artist: string; SongData: { image_url: string } }[]
-  >([]);
+  const [allSongs, setAllSongs] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [offset, setOffset] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const LIMIT = 50;
 
-  // Initialize API client with the access token
   const initializeApiClient = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.access_token) {
-      const apiClient = new APIClient(session.access_token);
-      return apiClient;
+      return new APIClient(session.access_token);
     }
     return null;
   };
 
-  const onGetGlobalSongs = async () => {
+  const fetchSongs = async (reset = false) => {
+    if (isLoading || (!hasMore && !reset)) return;
+
+    setIsLoading(true);
     try {
       const apiClient = await initializeApiClient();
       if (apiClient) {
-        const response = await apiClient.getGlobalSongs();
-        console.log(response);
-        // Compare with the previous data
-        if (JSON.stringify(response) !== JSON.stringify(lastFetchedSongs)) {
-          setAllSongs(response);
-          setLastFetchedSongs(response);
+        const currentOffset = reset ? 0 : offset;
+        const response = await apiClient.getGlobalSongs(LIMIT, currentOffset);
+        
+        if (response.length < LIMIT) {
+          setHasMore(false);
         }
+
+        if (reset) {
+          setAllSongs(response);
+        } else {
+          setAllSongs(prevSongs => [...prevSongs, ...response]);
+        }
+        
+        setOffset(currentOffset + response.length);
       }
     } catch (error) {
       console.error("Failed to fetch global songs:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // This effect will run when the screen is focused, ensuring data is fetched only when necessary
   useFocusEffect(
     useCallback(() => {
-      onGetGlobalSongs();
-    }, [lastFetchedSongs]) // Only refetch if the previous songs have changed
+      fetchSongs(true);
+    }, [])
   );
 
   useEffect(() => {
-    // Filter data based on search query
     const filtered = allSongs.filter(
       (song) =>
         song.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         song.artist.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredData(filtered);
-  }, [searchQuery, allSongs]); // Depend on both searchQuery and allSongs
+  }, [searchQuery, allSongs]);
 
-  // const renderItem = ({ item }) => (
-  //   <TouchableOpacity onPress={() => handleCardPress(item)}>
-  //     <Card song={item} />
-  //   </TouchableOpacity>
-  // );
+  const handleLoadMore = () => {
+    if (!isLoading && hasMore) {
+      fetchSongs();
+    }
+  };
 
-  const handleCardPress = (song) => {
-    // Function stub for handling card press
-    console.log("Clicked on:", song.title);
+  const renderFooter = () => {
+    if (!isLoading) return null;
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   };
 
   return (
@@ -107,19 +121,22 @@ export function Popular({ navigation }: { navigation: any }) {
           <TouchableOpacity
             onPress={() =>
               navigation.getParent().getParent().navigate("LyricsView", {
-                artist: item["artist"],
-                title: item["title"],
+                artist: item.artist,
+                title: item.title,
               })
             }
           >
             <Card
               title={item.title}
               artist={item.artist}
-              uri={item.SongData.image_url} // Access image_url within SongData
+              uri={item.SongData.image_url}
             />
           </TouchableOpacity>
         )}
-        keyExtractor={(item) => `${item["title"]}-${item["artist"]}`}
+        keyExtractor={(item) => `${item.title}-${item.artist}`}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.1}
+        ListFooterComponent={renderFooter}
       />
     </View>
   );

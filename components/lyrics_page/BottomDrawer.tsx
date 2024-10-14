@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   text: {
-    marginLeft: 20,
+    marginLeft: 15,
     fontSize: 20,
     textAlign: "left",
     flex: 1,

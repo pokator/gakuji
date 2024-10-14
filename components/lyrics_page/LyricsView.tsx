@@ -13,6 +13,7 @@ import {
   Dimensions,
   TouchableOpacity,
   Modal,
+  SafeAreaView,
 } from "react-native";
 import SegmentedControl from "./SegmentedControl";
 import { ClickableText } from "./LyricsText";
@@ -216,12 +217,16 @@ export function LyricsView({ route, navigation }) {
     };
   });
 
+  const rHiraganaViewHeight = useAnimatedStyle(() => {
+    return {
+      height: SCREEN_HEIGHT - 150
+    };
+  });
+
   //present a modal with a list of checkboxes and a submit and cancel button
 
-
-
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View
         style={styles.topRow}
         onLayout={(event) => {
@@ -232,13 +237,13 @@ export function LyricsView({ route, navigation }) {
         <View style={{ width: "100%" }}>
           <SegmentedControl onChange={onChange} />
         </View>
-        <View style={{ alignItems: "flex-end", paddingRight: 16, flex: 1 }}>
+        {/* <View style={{ alignItems: "flex-end", paddingRight: 16, flex: 1 }}>
           <IconButton
             icon={({ size, color }) => <FileEdit size={size} color={color} />}
             mode="outlined"
             onPress={() => console.log("Pressed")}
           />
-        </View>
+        </View> */}
       </View>
       {kanjiActive && song && (
         <View>
@@ -255,19 +260,21 @@ export function LyricsView({ route, navigation }) {
               ref={pagerRef}
             >
               <View style={styles.page}>
-                <View style={styles.details}>
-                  <Text style={styles.word}>{word}</Text>
-                  <Text style={styles.definition}>{partOfSpeech}</Text>
-                  <Text style={styles.romaji}>{romaji}</Text>
-                  <Text style={styles.furigana}>{furigana}</Text>
-                  <Text style={styles.definition}>{definition}</Text>
+                <View style={[styles.kanjiRow, styles.kanjiContainer]}>
+                  <View style={styles.kanjiItem}>
+                    <Text style={styles.word}>{word}</Text>
+                    <Text style={styles.definition}>{partOfSpeech}</Text>
+                    <Text style={styles.romaji}>{romaji}</Text>
+                    <Text style={styles.furigana}>{furigana}</Text>
+                    <Text style={styles.definition}>{definition}</Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => openModal(idseq)}
+                    style={styles.bookmarkContainer}
+                  >
+                    <Bookmark size={24} color="black" />
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  onPress={() => openModal(idseq)}
-                  style={styles.bookmarkContainer}
-                >
-                  <Bookmark size={24} color="black" />
-                </TouchableOpacity>
               </View>
               <View style={styles.page}>
                 <View style={styles.kanjiContainer}>
@@ -300,9 +307,11 @@ export function LyricsView({ route, navigation }) {
         </View>
       )}
       {!kanjiActive && song && (
-        <ScrollView>
-          <HiraganaText lyrics={song.hiragana_lyrics} />
-        </ScrollView>
+        <SafeAreaView>
+          <Animated.View style={[rHiraganaViewHeight]}>
+            <HiraganaText lyrics={song.hiragana_lyrics} />
+          </Animated.View>
+        </SafeAreaView>
       )}
       <ModalComponent
         visible={modalVisible}
@@ -312,15 +321,17 @@ export function LyricsView({ route, navigation }) {
         title={title}
         artist={artist}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: "100%",
-    marginVertical: 10,
+    // marginVertical: 10,
+  },
+  alignment: {
+    // marginHorizontal: 10,
   },
   page: {
     width: width,
@@ -376,8 +387,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   details: {
-    width: width - 50,
-    padding: 10,
+    flex: 1,
   },
   bookmarkContainer: {
     margin: 10,

@@ -23,6 +23,8 @@ interface ManualAdd {
   artist: string;
   lyrics: string;
   uuid?: string | null;
+  refresh_token?: string | null;
+  access_token?: string | null;
 }
 
 export interface WordAdd {
@@ -98,7 +100,7 @@ export class APIClient {
     return response.data;
   }
 
-  public async getGlobalSongs(limit: number = 10, offset: number = 0) {
+  public async getGlobalSongs(limit: number = 50, offset: number = 0) {
     const response = await this.axiosInstance.get("/song/get-global-songs", {
       params: { limit, offset },
     });

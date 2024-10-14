@@ -1,21 +1,21 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import React, { useState, useEffect, useCallback, useLayoutEffect } from "react";
+import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { Card } from "./Card";
 import AddButton from "./AddButton";
 import { PaperProvider } from "react-native-paper";
 import { APIClient } from "../api-client/api"; // API client initialized
 import { supabase } from "../lib/supabase"; // Supabase client initialized
+import { SafeAreaView } from "react-native";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
+    height: "100%",
   },
+  button: {
+    position: "relative",
+  }
 });
 
 export function Saved({ navigation }: { navigation: any }) {
@@ -24,7 +24,9 @@ export function Saved({ navigation }: { navigation: any }) {
 
   // Initialize API client with the access token
   const initializeApiClient = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (session?.access_token) {
       const apiClient = new APIClient(session.access_token);
       return apiClient;
@@ -50,13 +52,13 @@ export function Saved({ navigation }: { navigation: any }) {
   };
 
   // Fetch the songs when the component mounts
-  useEffect(() => {
+  useLayoutEffect(() => {
     onGetSongList();
   }, []);
 
   return (
     <PaperProvider>
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <FlatList
           data={songs}
           renderItem={({ item }) => (
@@ -77,8 +79,10 @@ export function Saved({ navigation }: { navigation: any }) {
           )}
           keyExtractor={(item) => `${item["title"]}-${item["artist"]}`}
         />
-        <AddButton navigation={navigation} refreshList={onGetSongList} />
-      </View>
+        <View style={styles.button}>
+          <AddButton navigation={navigation} refreshList={onGetSongList} />
+        </View>
+      </SafeAreaView>
     </PaperProvider>
   );
 }
