@@ -31,6 +31,9 @@
         "projectId": "0a118b0b-cfb5-4de3-bb9a-2458967decb5"
       }
     },
+    "experiments": {
+      "baseUrl": "/gakuji"
+    },
     "scheme": "com.gakuji"
   }
 }
