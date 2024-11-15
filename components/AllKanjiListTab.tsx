@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   FlatList,
   StyleSheet,
   Dimensions,
-  Pressable,
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Searchbar } from "react-native-paper";

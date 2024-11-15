@@ -12,13 +12,11 @@ import {
   ScrollView,
   Dimensions,
   TouchableOpacity,
-  Modal,
   SafeAreaView,
 } from "react-native";
 import SegmentedControl from "./SegmentedControl";
 import { ClickableText } from "./LyricsText";
 import KanjiSheet, { BottomSheetRefProps } from "./BottomDrawer";
-import { IconButton, Portal } from "react-native-paper";
 import { Bookmark, FileEdit } from "@tamagui/lucide-icons";
 import Animated, {
   useAnimatedStyle,
@@ -26,7 +24,6 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { HiraganaText } from "./HiraganaText";
-import { Gesture } from "react-native-gesture-handler";
 import { APIClient, SongData } from "../../api-client/api"; // API client initialized
 import { supabase } from "../../lib/supabase"; // Supabase client initialized
 import ModalComponent from "./ListModal";
@@ -49,16 +46,31 @@ interface KanjiInfo {
   meanings: string[];
 }
 
+interface WordDefinition {
+  definition: string[];
+  pos: string[];
+}
+
 export function LyricsView({ route, navigation }) {
   const { artist, title } = route.params;
   const [song, setSong] = useState<SongData | null>(null);
   const [kanjiActive, setKanjiActive] = useState(true);
-  const [definition, setDefinition] = useState("invincible");
-  const [word, setWord] = useState("無敵");
-  const [furigana, setFurigana] = useState("むてき");
-  const [romaji, setRomaji] = useState("muteki");
-  const [partOfSpeech, setPartOfSpeech] = useState("adjective");
-  const [idseq, setIdseq] = useState("#11111");
+
+  // Update state definitions
+  const [compositeWord, setCompositeWord] = useState({
+    word: "",
+    definitions: [], // Will now hold array of definition objects
+    definitionIndex: 0,
+  });
+
+  const [rootWord, setRootWord] = useState({
+    word: "",
+    definitions: [], // Will now hold array of definition objects
+    definitionIndex: 0,
+  });
+
+  // State for suffixes
+  const [suffixes, setSuffixes] = useState([]);
   const [kanjiList, setKanjiList] = useState<KanjiInfo[]>([]);
 
   const pagerRef = useRef<ScrollView>(null);
@@ -144,28 +156,187 @@ export function LyricsView({ route, navigation }) {
     return kanjiDetails;
   }
 
+  // const onPress = useCallback(
+  //   (word: React.SetStateAction<string>) => {
+  //     const isClosed = ref?.current?.zeroPosition();
+  //     if (isClosed) {
+  //       ref?.current?.openBottomSheet(1);
+  //     }
+  //     const wordObj = song?.["word_mapping"][word];
+
+  //     setWord(word);
+  //     setFurigana(wordObj.furigana);
+  //     setRomaji(wordObj.romaji);
+  //     setPartOfSpeech(wordObj.definitions?.[0]?.pos || []);
+  //     setIdseq(wordObj.idseq);
+  //     setDefinitions(wordObj.definitions || []);
+  //     setDefinitionIndex(0);
+
+  //     const kanjiList = parseKanji(word, song?.["kanji_data"]);
+  //     setKanjiList(kanjiList);
+  //   },
+  //   [song]
+  // );
+
   const onPress = useCallback(
     (word: React.SetStateAction<string>) => {
       const isClosed = ref?.current?.zeroPosition();
       if (isClosed) {
         ref?.current?.openBottomSheet(1);
       }
-      console.log(word);
-      console.log(song?.["word_mapping"][word]);
-      const wordObj = song?.["word_mapping"][word][0];
-      setWord(word);
-      setFurigana(wordObj.furigana);
-      setRomaji(wordObj.romaji);
-      setPartOfSpeech(wordObj.definitions?.[0]?.pos?.join(", ") || ""); // Access pos safely
-      setIdseq(wordObj.idseq);
-      // console.log(wordObj.definitions?.size);
-      setDefinition(wordObj.definitions?.[0]?.definition?.join(", ") || ""); // Access definition safely
+      const wordObj = song?.["word_mapping"]?.[word];
+      if (!wordObj) {
+        console.error("Word object not found for:", word);
+        return;
+      }
+
+      console.log("Processing word object:", wordObj);
+
+      // Update composite word state
+      if (wordObj.composite && Array.isArray(wordObj.composite)) {
+        setCompositeWord({
+          word: word,
+          definitions: wordObj.composite.map((def) => ({
+            furigana: def.furigana || "",
+            romaji: def.romaji || "",
+            definitions: Array.isArray(def.definitions) ? def.definitions : [],
+            idseq: def.idseq || "",
+          })),
+          definitionIndex: 0,
+        });
+      } else {
+        setCompositeWord({
+          word: "",
+          definitions: [],
+          definitionIndex: 0,
+        });
+      }
+
+      // Update root word state
+      if (wordObj.root && Array.isArray(wordObj.root)) {
+        setRootWord({
+          word: wordObj.root[0]?.word || wordObj.root[0]?.surface || "",
+          definitions: wordObj.root.map((def) => ({
+            furigana: def.furigana || "",
+            romaji: def.romaji || "",
+            definitions: Array.isArray(def.definitions) ? def.definitions : [],
+            idseq: def.idseq || "",
+          })),
+          definitionIndex: 0,
+        });
+      } else {
+        setRootWord({
+          word: "",
+          definitions: [],
+          definitionIndex: 0,
+        });
+      }
+
+      // Update suffixes state (unchanged as it was already handling arrays correctly)
+      setSuffixes(Array.isArray(wordObj.suffixes) ? wordObj.suffixes : []);
 
       const kanjiList = parseKanji(word, song?.["kanji_data"]);
       setKanjiList(kanjiList);
     },
     [song]
   );
+  // Update WordSection component to handle the data more robustly
+  const WordSection = ({ data, title }) => {
+    if (!data || !data.word || !data.definitions?.length) return null;
+
+    const currentDef = data.definitions[data.definitionIndex];
+
+    return (
+      <View style={styles.section}>
+        <View style={styles.kanjiRow}>
+          <Text style={styles.word}>{data.word}</Text>
+          <View style={styles.definitionSelector}>
+            <View style={styles.definitionSelectorButtons}>
+              {data.definitions
+                .filter(
+                  (definition) =>
+                    definition &&
+                    definition.romaji &&
+                    definition.furigana &&
+                    definition.definitions
+                )
+                .map((_, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => {
+                      if (title === "Complete Word") {
+                        setCompositeWord((prev) => ({
+                          ...prev,
+                          definitionIndex: index,
+                        }));
+                      } else {
+                        setRootWord((prev) => ({
+                          ...prev,
+                          definitionIndex: index,
+                        }));
+                      }
+                    }}
+                    style={[
+                      styles.definitionSelectorItem,
+                      data.definitionIndex === index &&
+                        styles.definitionSelectorItemActive,
+                    ]}
+                  >
+                    <Text style={styles.definitionSelectorText}>
+                      {index + 1}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+            </View>
+          </View>
+        </View>
+        <View style={styles.kanjiRow}>
+          <View style={styles.kanjiItem}>
+            <Text style={styles.romaji}>{currentDef.romaji}</Text>
+            <Text style={styles.furigana}>{currentDef.furigana}</Text>
+            {currentDef.definitions?.filter(Boolean).map((def, index) => (
+              <View key={index} style={styles.definitionContainer}>
+                {def.pos?.length > 0 && (
+                  <Text style={styles.partOfSpeech}>
+                    ({def.pos.join(", ")})
+                  </Text>
+                )}
+                <Text style={styles.definition}>
+                  {def.definition.join(", ")}
+                </Text>
+              </View>
+            ))}
+          </View>
+          <TouchableOpacity
+            onPress={() => openModal(data.word)}
+            style={styles.bookmarkContainer}
+          >
+            <Bookmark size={24} color="black" />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  const SuffixSection = ({ suffixes }) => {
+    if (!suffixes?.length) return null;
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Suffixes</Text>
+        {suffixes.filter(Boolean).map((suffix, index) => (
+          <View key={index} style={styles.suffixItem}>
+            <Text style={styles.suffixToken}>{suffix.token}</Text>
+            <Text style={styles.suffixDetail}>
+              Root form: {suffix.root_form}
+            </Text>
+            <Text style={styles.suffixDetail}>Furigana: {suffix.furigana}</Text>
+            <Text style={styles.suffixDetail}>Romaji: {suffix.romaji}</Text>
+            <Text style={styles.suffixDetail}>Meaning: {suffix.meaning}</Text>
+          </View>
+        ))}
+      </View>
+    );
+  };
 
   useEffect(() => {
     const fetchSong = async () => {
@@ -187,6 +358,20 @@ export function LyricsView({ route, navigation }) {
       setKanjiActive(false); // Reset kanjiActive state when unmounting
     };
   }, [artist, title]);
+
+  useEffect(() => {
+    setCompositeWord({
+      word: "",
+      definitions: [],
+      definitionIndex: 0,
+    });
+    setRootWord({
+      word: "",
+      definitions: [],
+      definitionIndex: 0,
+    });
+    setSuffixes([]);
+  }, []);
 
   const initializeApiClient = async () => {
     const {
@@ -219,7 +404,7 @@ export function LyricsView({ route, navigation }) {
 
   const rHiraganaViewHeight = useAnimatedStyle(() => {
     return {
-      height: SCREEN_HEIGHT - 150
+      height: SCREEN_HEIGHT - 150,
     };
   });
 
@@ -260,20 +445,18 @@ export function LyricsView({ route, navigation }) {
               ref={pagerRef}
             >
               <View style={styles.page}>
-                <View style={[styles.kanjiRow, styles.kanjiContainer]}>
-                  <View style={styles.kanjiItem}>
-                    <Text style={styles.word}>{word}</Text>
-                    <Text style={styles.definition}>{partOfSpeech}</Text>
-                    <Text style={styles.romaji}>{romaji}</Text>
-                    <Text style={styles.furigana}>{furigana}</Text>
-                    <Text style={styles.definition}>{definition}</Text>
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => openModal(idseq)}
-                    style={styles.bookmarkContainer}
-                  >
-                    <Bookmark size={24} color="black" />
-                  </TouchableOpacity>
+                <ScrollView style={styles.kanjiContainer}>
+                  {compositeWord.word && (
+                    <WordSection data={compositeWord} title="Complete Word" />
+                  )}
+                </ScrollView>
+              </View>
+              <View style={styles.page}>
+                <View style={styles.kanjiContainer}>
+                  {rootWord.word && (
+                    <WordSection data={rootWord} title="Root Word" />
+                  )}
+                  {suffixes.length > 0 && <SuffixSection suffixes={suffixes} />}
                 </View>
               </View>
               <View style={styles.page}>
@@ -392,6 +575,79 @@ const styles = StyleSheet.create({
   bookmarkContainer: {
     margin: 10,
     alignItems: "center",
+  },
+  definitionSelector: {
+    flexDirection: "column",
+  },
+  partOfSpeech: {
+    fontSize: 12, // Smaller font
+    color: "#666",
+  },
+  section: {
+    marginBottom: 8, // Reduced margin
+    padding: 12, // Reduced padding
+    backgroundColor: "#fff",
+    borderRadius: 6, // Reduced border radius
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3, // Reduced shadow radius
+    elevation: 2,
+  },
+
+  sectionTitle: {
+    fontSize: 14, // Reduced font size
+    fontWeight: "600",
+    color: "#666",
+    marginBottom: 4, // Reduced margin
+  },
+
+  suffixItem: {
+    marginTop: 8, // Reduced margin
+    paddingTop: 8, // Reduced padding
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
+
+  suffixToken: {
+    fontSize: 16, // Reduced font size
+    fontWeight: "500",
+    marginBottom: 2, // Reduced margin
+  },
+
+  suffixDetail: {
+    fontSize: 12, // Reduced font size
+    color: "#666",
+    marginBottom: 1, // Reduced margin
+  },
+
+  definitionContainer: {
+    marginTop: 6, // Reduced margin
+  },
+
+  definitionSelectorButtons: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginVertical: 6, // Reduced margin
+  },
+
+  definitionSelectorItem: {
+    padding: 6, // Reduced padding
+    marginHorizontal: 3, // Reduced margin
+    borderRadius: 3, // Reduced border radius
+    backgroundColor: "#eee",
+  },
+
+  definitionSelectorItemActive: {
+    backgroundColor: "#007AFF",
+  },
+
+  definitionSelectorText: {
+    fontSize: 12, // Reduced font size
+    color: "#000",
+  },
+  definitionSelectorTextActive: {
+    color: "#fff",
   },
 });
 

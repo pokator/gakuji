@@ -22,8 +22,9 @@
       },
       "package": "com.sourav.gakuji"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
+     "web": {
+      "output": "server",
+      "bundler": "metro"
     },
     "extra": {
       "eas": {

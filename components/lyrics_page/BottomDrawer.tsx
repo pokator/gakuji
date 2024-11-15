@@ -32,7 +32,7 @@ export type BottomSheetRefProps = {
 };
 
 const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
-  ({ children, activeIndex, setHeight }, ref) => {
+  ({ children, activeIndex = 0, setHeight }, ref) => {
     const active = useSharedValue(false);
     const offset = 105;
     const translateY = useSharedValue(0);
@@ -64,10 +64,6 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
     const getSheetHeight = useCallback(() => {
       return SCREEN_HEIGHT + snapPoints[position.value];
     }, []);
-
-    // useEffect(() => {
-    //   runOnJS(scrollTo)(-200 - offset);
-    // }, []);
 
     const openBottomSheet = useCallback((newPosition: number) => {
       position.value = newPosition;
@@ -144,12 +140,11 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
       }
     };
 
-    // Use arrowUpOpacity animated value directly in the style
     const arrowUpStyle = useAnimatedStyle(() => {
       const opacity = position.value === snapPoints.length - 1 ? 0 : 1;
 
       return {
-        opacity: withTiming(opacity), // Use arrowUpOpacity animated value here
+        opacity: withTiming(opacity),
       };
     });
 
@@ -157,7 +152,7 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
       const opacity = position.value === snapPoints.length - 1 ? 0 : 1;
 
       return {
-        opacity: withTiming(opacity), // Use arrowUpOpacity animated value here
+        opacity: withTiming(opacity),
       };
     });
 
@@ -165,7 +160,7 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
       const opacity = position.value === 0 ? 0 : 1;
 
       return {
-        opacity: withTiming(opacity), // Use arrowUpOpacity animated value here
+        opacity: withTiming(opacity),
       };
     });
 
@@ -179,7 +174,13 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
           </GestureDetector>
           <View style={{ width: "100%" }}>
             <View style={styles.topContainer}>
-              <Text style={styles.text}>{activeIndex == 0 ? "Word Details" : "Kanji Details"}</Text>
+              <Text style={styles.text}>
+                {activeIndex === 0
+                  ? "Word"
+                  : activeIndex === 1
+                  ? "Components"
+                  : "Kanji"}
+              </Text>
               <View style={styles.dotsContainer}>
                 <Animated.View style={[arrowUpStyle]}>
                   <Dots activeIndex={activeIndex} />
@@ -249,14 +250,11 @@ const styles = StyleSheet.create({
   dotsContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    flex: 1, // Occupy remaining space
-  },
-  dot: {
-    marginRight: 2,
+    flex: 1,
   },
   buttonsContainer: {
     flexDirection: "row",
-    flex: 1, // Occupy remaining space
+    flex: 1,
     justifyContent: "flex-end",
     marginRight: 20,
   },
@@ -272,13 +270,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: "left",
     flex: 1,
-  },
-  background: {
-    width: "100%",
-    height: "100%",
-    backgroundColor: "rgba(0,0,0,0.5)",
-    position: "absolute",
-    top: 0,
   },
 });
 

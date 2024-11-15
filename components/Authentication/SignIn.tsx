@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Alert, StyleSheet, View, Text, AppState } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { Input } from "@rneui/themed";
@@ -23,9 +23,6 @@ export default function SignIn({ navigation }) {
       email: email,
       password: password,
     });
-
-    const session = (await supabase.auth.getSession()).data.session
-    const accessToken = session?.access_token
 
     if (error) Alert.alert(error.message);
     setLoading(false);
@@ -55,12 +52,6 @@ export default function SignIn({ navigation }) {
           autoCapitalize="none"
         />
       </View>
-      {/* <View style={[styles.verticallySpaced, styles.mt20]}>
-        <Button title="Sign in" disabled={loading} onPress={signInWithEmail} />
-      </View>
-      <View style={styles.verticallySpaced}>
-        <Button title="Don't have an account? Sign up" type="clear" onPress={() => navigation.navigate('SignUp')} />
-      </View> */}
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Button theme="active" disabled={loading} onPress={signInWithEmail}>
           Sign in

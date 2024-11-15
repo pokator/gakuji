@@ -18,6 +18,13 @@ interface SpotifyAdd {
   access_token?: string | null;
 }
 
+interface SearchAdd {
+  title: string;
+  artist: string;
+  refresh_token?: string | null;
+  access_token?: string | null;
+}
+
 interface ManualAdd {
   title: string;
   artist: string;
@@ -87,6 +94,11 @@ export class APIClient {
   // Song endpoints
   public async addSongSpot(spotifyData: SpotifyAdd) {
     const response = await this.axiosInstance.post("/song/add-song-spot", spotifyData);
+    return response.data;
+  }
+
+  public async addSongSearch(searchData: SearchAdd) {
+    const response = await this.axiosInstance.post("/song/add-song-search", searchData);
     return response.data;
   }
 

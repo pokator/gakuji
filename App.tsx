@@ -34,9 +34,6 @@ function SavedStackScreen() {
   return (
     <SavedStack.Navigator
       screenOptions={{
-        // headerTitle: headerText,
-        // headerTitleStyle: { opacity: fadeAnim, fontSize: 24 },
-        // headerTitleAlign: "center",
         headerShown: false,
       }}
     >
@@ -118,9 +115,6 @@ function TabNavigationScreen() {
       />
       <Tab.Screen
         name="My Profile Tab"
-        // component={(props: any) => (
-        //   <ProfilePage {...props} session={session} key={session.user.id} />
-        // )}
         component={ProfilePage}
         options={{
           tabBarIcon: ({ color, size }) => (
@@ -172,9 +166,7 @@ export default function App() {
       setSession(session);
     });
   }, []);
-  {
-    /* <Account key={session.user.id} session={session} /> */
-  }
+  {}
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

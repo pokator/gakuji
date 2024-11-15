@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, Image, StyleSheet, Animated } from "react-native";
+import { View, Text, Image, StyleSheet, Animated, ActivityIndicator } from "react-native";
 
 const styles = StyleSheet.create({
   card: {
@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
   textContainer: {
     marginLeft: 16,
     justifyContent: "space-around",
-    flex: 1, // This ensures the text container takes up the remaining space
+    flex: 1,
   },
   title: {
     fontSize: 18,
@@ -37,6 +37,11 @@ const styles = StyleSheet.create({
   },
   animatedTextContainer: {
     overflow: 'hidden',
+  },
+  loadingContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 8,
   },
 });
 
@@ -50,7 +55,7 @@ const AnimatedText = ({ text, style, containerWidth }) => {
         Animated.sequence([
           Animated.timing(scrollX, {
             toValue: -textWidth.current,
-            duration: textWidth.current * 50, // Adjust speed here
+            duration: textWidth.current * 50,
             useNativeDriver: true,
           }),
           Animated.timing(scrollX, {
@@ -83,7 +88,7 @@ const AnimatedText = ({ text, style, containerWidth }) => {
   );
 };
 
-export function Card({ title, artist, uri }) {
+export function Card({ title, artist, uri, loading }) {
   const [textContainerWidth, setTextContainerWidth] = useState(0);
 
   return (
@@ -105,6 +110,11 @@ export function Card({ title, artist, uri }) {
         />
         <Text style={styles.artist}>{artist}</Text>
       </View>
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color="#000" />
+        </View>
+      )}
     </View>
   );
 }

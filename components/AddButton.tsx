@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Modal,
@@ -15,12 +15,25 @@ const AddButton = ({ navigation, refreshList }) => {
   const [open, setOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState("link");
   const [uri, setURI] = useState("");
+  const [artist, setArtist] = useState("");
+  const [title, setTitle] = useState("");
+
+  const [fillText, setFillText] = useState(
+    "Song submitted! It will be added to the list shortly."
+  );
 
   const onStateChange = ({ open }) => setOpen(open);
 
   const handleFromLinkPress = () => {
     setModalOpen(true);
+    setModalType("link");
+  };
+
+  const handleSearchPress = () => {
+    setModalOpen(true);
+    setModalType("search");
   };
 
   const handleManualEntryPress = () => {
@@ -32,7 +45,9 @@ const AddButton = ({ navigation, refreshList }) => {
   };
 
   const initializeApiClient = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (session?.access_token) {
       const apiClient = new APIClient(session.access_token);
       return apiClient;
@@ -42,26 +57,70 @@ const AddButton = ({ navigation, refreshList }) => {
 
   const handleSubmit = async () => {
     // Do something with the URI
-    console.log("Submitted URI:", uri);
-    // You can add more logic here, like sending the URI to an API or storing it locally
-    // Add your logic here
     setSubmitted(true);
     try {
       const apiClient = await initializeApiClient();
       if (apiClient) {
-        const { data: { session } } = await supabase.auth.getSession();
-        const response = await apiClient.addSongSpot({ uri: uri, refresh_token: session?.refresh_token, access_token: session?.access_token });
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const response = await apiClient.addSongSpot({
+          uri: uri,
+          refresh_token: session?.refresh_token,
+          access_token: session?.access_token,
+        });
         console.log(response);
+        if (response.data.count != null) {
+          setFillText("Song added successfully.");
+        } else {
+          setFillText(
+            "Song could not be added. Please try a different method."
+          );
+        }
       }
     } catch (error) {
       console.error("Failed to fetch songs:", error);
     }
 
     // After handling the URI, close the modal
-    
+
     setURI("");
     refreshList();
     // navigation.getParent().navigate("LyricsEntry", {fromLink: true});
+  };
+
+  const handleSearchSubmit = async () => {
+    // Do something with the artist and title
+    setSubmitted(true);
+    try {
+      const apiClient = await initializeApiClient();
+      if (apiClient) {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const response = await apiClient.addSongSearch({
+          artist: artist,
+          title: title,
+          refresh_token: session?.refresh_token,
+          access_token: session?.access_token,
+        });
+        console.log(response);
+        if (response.data.count != null) {
+          setFillText("Song added successfully.");
+        } else {
+          setFillText(
+            "Song could not be added. Please try a different method."
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch songs:", error);
+    }
+
+    // After handling the artist and title, close the modal
+    setArtist("");
+    setTitle("");
+    refreshList();
   };
 
   const onReturn = () => {
@@ -82,10 +141,7 @@ const AddButton = ({ navigation, refreshList }) => {
             <View style={styles.modalContent}>
               {submitted ? (
                 <>
-                  <Text>
-                    Song Submitted! It may take up to a minute for the result to
-                    arrive.
-                  </Text>
+                  <Text>{fillText}</Text>
                   <View style={styles.buttonContainer}>
                     <TouchableOpacity onPress={onReturn} style={styles.button}>
                       <Text>Return</Text>
@@ -94,29 +150,73 @@ const AddButton = ({ navigation, refreshList }) => {
                 </>
               ) : (
                 <>
-                  <Text style={styles.modalTitle}>From Link</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter URI"
-                    value={uri}
-                    onChangeText={(text) => setURI(text)}
-                  />
-                  <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                      style={styles.button}
-                      onPress={handleCloseModal}
-                    >
-                      <Text style={styles.buttonText}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.button, { backgroundColor: "#007bff" }]}
-                      onPress={handleSubmit}
-                    >
-                      <Text style={[styles.buttonText, { color: "#fff" }]}>
-                        Submit
+                  {modalType === "link" ? (
+                    <>
+                      <Text style={styles.modalTitle}>From Link</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Enter URI"
+                        value={uri}
+                        onChangeText={(text) => setURI(text)}
+                      />
+                      <View style={styles.buttonContainer}>
+                        <TouchableOpacity
+                          style={styles.button}
+                          onPress={handleCloseModal}
+                        >
+                          <Text style={styles.buttonText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[
+                            styles.button,
+                            { backgroundColor: "#007bff" },
+                          ]}
+                          onPress={handleSubmit}
+                        >
+                          <Text style={[styles.buttonText, { color: "#fff" }]}>
+                            Submit
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={styles.modalTitle}>
+                        Search (Japanese Title)
                       </Text>
-                    </TouchableOpacity>
-                  </View>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Enter Artist"
+                        value={artist}
+                        onChangeText={(text) => setArtist(text)}
+                      />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Enter Title"
+                        value={title}
+                        onChangeText={(text) => setTitle(text)}
+                      />
+                      <View style={styles.buttonContainer}>
+                        <TouchableOpacity
+                          style={styles.button}
+                          onPress={handleCloseModal}
+                        >
+                          <Text style={styles.buttonText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[
+                            styles.button,
+                            { backgroundColor: "#007bff" },
+                          ]}
+                          onPress={handleSearchSubmit}
+                        >
+                          <Text style={[styles.buttonText, { color: "#fff" }]}>
+                            Submit
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  )}
                 </>
               )}
             </View>
@@ -129,7 +229,6 @@ const AddButton = ({ navigation, refreshList }) => {
         icon={open ? "close" : "plus"}
         style={styles.fabContainer}
         rippleColor={"rgba(0, 0, 0, 0.5)"}
-        
         actions={[
           {
             icon: "star",
@@ -141,6 +240,12 @@ const AddButton = ({ navigation, refreshList }) => {
             icon: "heart",
             label: "Manual Entry",
             onPress: handleManualEntryPress,
+            labelTextColor: "white",
+          },
+          {
+            icon: "search-web",
+            label: "Search",
+            onPress: handleSearchPress,
             labelTextColor: "white",
           },
         ]}

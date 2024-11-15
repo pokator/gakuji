@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
@@ -24,6 +23,7 @@ export function ProfilePage({ navigation }: { navigation: any }) {
       } = await supabase.auth.getUser();
       if (user) {
         setProfile(user);
+        console.log("User found:", user);
       } else {
         console.log("No user found");
       }
@@ -62,40 +62,14 @@ export function ProfilePage({ navigation }: { navigation: any }) {
               <Text style={styles.label}>Username</Text>
               <Text style={styles.value}>{profile.username}</Text>
             </View>
-            {/* <View style={styles.infoItem}>
-              <Text style={styles.label}>Name</Text>
-              <Text style={styles.value}>{profile.name}</Text>
-            </View> */}
             <View style={styles.infoItem}>
               <Text style={styles.label}>Email</Text>
               <Text style={styles.value}>{profile.email}</Text>
             </View>
-            {/* <View style={styles.infoItem}>
-              <Text style={styles.label}>Bio</Text>
-              <Text style={[styles.value, styles.bio]}>{profile.bio}</Text>
-            </View> */}
           </View>
         )}
         {/* style={styles.actionButtons} */}
         <YStack >
-          {/* <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => console.log("Edit Profile pressed")}
-          >
-            
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => console.log("Settings pressed")}
-          >
-            
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.logoutButton]}
-            onPress={signOut}
-          >
-            
-          </TouchableOpacity> */}
           <XStack marginBottom={10}>
             <Button icon={<Feather name="edit" size={24} color="#007bff" />} flex={1}>
               Edit Profile

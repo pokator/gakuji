@@ -1,5 +1,13 @@
-import React, { useEffect, useLayoutEffect, useState } from "react";
-import { Modal, View, Text, Button, StyleSheet, Alert } from "react-native";
+import React, { useLayoutEffect, useState, useRef } from "react";
+import {
+  Modal,
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  Alert,
+  Animated,
+} from "react-native";
 import { Checkbox } from "react-native-paper";
 import { APIClient, WordAdd } from "../../api-client/api";
 import { supabase } from "../../lib/supabase";
@@ -34,10 +42,96 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
   const [checkedListIds, setCheckedListIds] = useState<string[]>([]);
   const [isAddingList, setIsAddingList] = useState(false);
   const [newListName, setNewListName] = useState("");
+  const borderAnimation = useRef(new Animated.Value(0)).current;
+  const shakeAnimation = useRef(new Animated.Value(0)).current;
+
+  const createShakeAnimation = () => {
+    // Reset shake value
+    shakeAnimation.setValue(0);
+
+    // Create a sequence of small movements
+    Animated.sequence([
+      // Shake right
+      Animated.timing(shakeAnimation, {
+        toValue: 10,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      // Shake left
+      Animated.timing(shakeAnimation, {
+        toValue: -10,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      // Shake right
+      Animated.timing(shakeAnimation, {
+        toValue: 8,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      // Shake left
+      Animated.timing(shakeAnimation, {
+        toValue: -8,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      // Shake right
+      Animated.timing(shakeAnimation, {
+        toValue: 5,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      // Back to center
+      Animated.timing(shakeAnimation, {
+        toValue: 0,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const flashBorder = () => {
+    // Reset animation value
+    borderAnimation.setValue(0);
+
+    // Create animation sequence
+    Animated.sequence([
+      Animated.timing(borderAnimation, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+      Animated.timing(borderAnimation, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+      Animated.timing(borderAnimation, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+      Animated.timing(borderAnimation, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  };
+
+  const animateError = () => {
+    // Run both animations together
+    createShakeAnimation();
+    flashBorder();
+  };
 
   const handleSubmit = async () => {
     console.log("Submitted checked list IDs:", checkedListIds);
     console.log("Term:", term);
+    if (isAddingList) {
+      animateError();
+      return; // Prevent form submission if adding a list
+    }
     try {
       const apiClient = await initializeApiClient();
       if (apiClient) {
@@ -57,11 +151,19 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
           };
           await apiClient.addWordToList(wordAdd);
         }
+        setIsAddingList(false);
+        setNewListName("");
       }
     } catch (error) {
       console.error("Failed to update lists:", error);
     }
 
+    onClose();
+  };
+
+  const handleClose = () => {
+    setIsAddingList(false);
+    setNewListName("");
     onClose();
   };
 
@@ -147,6 +249,11 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
     }
   };
 
+  const interpolatedBorderColor = borderAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["#ccc", "#ff0000"],
+  });
+
   return (
     <Modal visible={visible} transparent={true} animationType="fade">
       <View style={styles.modalOverlay}>
@@ -175,12 +282,26 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
             </TouchableOpacity>
             {isAddingList ? (
               <>
-                <TextInput
-                  style={styles.input}
-                  value={newListName}
-                  onChangeText={setNewListName}
-                  placeholder="Enter list name"
-                />
+                <Animated.View
+                  style={[
+                    styles.inputContainer,
+                    {
+                      borderColor: interpolatedBorderColor,
+                      transform: [
+                        {
+                          translateX: shakeAnimation,
+                        },
+                      ],
+                    },
+                  ]}
+                >
+                  <TextInput
+                    style={styles.input}
+                    value={newListName}
+                    onChangeText={setNewListName}
+                    placeholder="Enter list name"
+                  />
+                </Animated.View>
                 <TouchableOpacity onPress={handleAddNewList}>
                   <Text>ADD</Text>
                 </TouchableOpacity>
@@ -192,14 +313,13 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
 
           <View style={styles.buttonRow}>
             <Button title="Submit" onPress={handleSubmit} />
-            <Button title="Cancel" onPress={onClose} />
+            <Button title="Cancel" onPress={handleClose} />
           </View>
         </View>
       </View>
     </Modal>
   );
 };
-
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
@@ -228,13 +348,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
   },
-  input: {
+  inputContainer: {
     flex: 1,
     marginLeft: 10,
     marginRight: 10,
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 5,
+  },
+  input: {
     padding: 5,
   },
   newListText: {

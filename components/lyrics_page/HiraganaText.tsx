@@ -1,6 +1,5 @@
 import React, { useCallback } from "react";
-import { Text, View, Pressable, StyleSheet, FlatList } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
+import { Text, View, StyleSheet, FlatList } from "react-native";
 
 interface ClickableTextProps {
   lyrics: string[];
@@ -25,19 +24,6 @@ export const HiraganaText: React.FC<ClickableTextProps> = ({ lyrics }) => {
       initialNumToRender={10}
       extraData={[lyrics]}
     />
-  );
-
-  return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{
-        alignItems: "center",
-        justifyContent: "flex-start",
-        flex: 1,
-      }}
-    >
-      {}
-    </ScrollView>
   );
 };
 

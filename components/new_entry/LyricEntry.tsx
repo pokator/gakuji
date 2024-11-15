@@ -1,55 +1,28 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import { View, Text, TextInput, StyleSheet, TouchableOpacity } from "react-native";
 import { Mic, Disc } from "@tamagui/lucide-icons";
-import { APIClient } from "../../api-client/api"; // API client initialized
-import { supabase } from "../../lib/supabase"; // Supabase client initialized
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { APIClient } from "../../api-client/api";
+import { supabase } from "../../lib/supabase";
 
-export function LyricsEntryScreen({
-  route,
-  navigation,
-}: {
-  route: any;
-  navigation: any;
-}) {
-  // const { refreshList } = route.params;
-  // console.log("fromLink:", fromLink);
-
+export function LyricsEntryScreen({ navigation }) {
   const [artist, setArtist] = useState("");
   const [title, setTitle] = useState("");
   const [lyrics, setLyrics] = useState("");
-
   const [submitted, setSubmitted] = useState(false);
 
   const initializeApiClient = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session?.access_token) {
-      const apiClient = new APIClient(session.access_token);
-      return apiClient;
-    }
-    return null;
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token ? new APIClient(session.access_token) : null;
   };
 
   const handleSubmit = async () => {
     setSubmitted(true);
-    // Handle the submission of lyrics here
-    // For example, you can send them to a backend server
-    // or save them locally
-    // console.log("Lyrics submitted!");
-    // After handling the submission, you might want to navigate back
-
     try {
       const apiClient = await initializeApiClient();
       if (apiClient) {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         const response = await apiClient.addSongManual({
-          title: title,
-          artist: artist,
-          lyrics: lyrics,
+          title, artist, lyrics,
           refresh_token: session?.refresh_token,
           access_token: session?.access_token,
         });
@@ -65,135 +38,190 @@ export function LyricsEntryScreen({
     setTitle("");
     setLyrics("");
     setSubmitted(false);
-
     navigation.goBack();
   };
 
   return (
     <View style={styles.container}>
       {!submitted ? (
-        <>
-          <View>
+        <View style={styles.contentContainer}>
+          <View style={styles.inputsContainer}>
             <View style={styles.row}>
-              {/* Icon */}
               <View style={styles.iconContainer}>
-                <Mic size={24} color="black" />
+                <Mic size={24} color="#4A5568" />
               </View>
-              {/* Text Input */}
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Artist"
-                  value={artist}
-                  onChangeText={(text) => setArtist(text)}
-                />
-              </View>
+              <TextInput
+                style={styles.input}
+                placeholder="Artist name"
+                placeholderTextColor="#A0AEC0"
+                value={artist}
+                onChangeText={setArtist}
+              />
             </View>
+
             <View style={styles.row}>
-              {/* Icon */}
               <View style={styles.iconContainer}>
-                <Disc size={24} color="black" />
+                <Disc size={24} color="#4A5568" />
               </View>
-              {/* Text Input */}
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Title"
-                  value={title}
-                  onChangeText={(text) => setTitle(text)}
-                />
-              </View>
+              <TextInput
+                style={styles.input}
+                placeholder="Song title"
+                placeholderTextColor="#A0AEC0"
+                value={title}
+                onChangeText={setTitle}
+              />
+            </View>
+
+            <View style={styles.lyricsContainer}>
+              <TextInput
+                style={styles.lyricsInput}
+                placeholder="Enter song lyrics here..."
+                placeholderTextColor="#A0AEC0"
+                multiline={true}
+                textAlignVertical="top"
+                value={lyrics}
+                onChangeText={setLyrics}
+              />
             </View>
           </View>
-          <View style={styles.lyricInput}>
-            <TextInput
-              placeholder="Paste lyrics here"
-              multiline={true}
-              value={lyrics}
-              onChangeText={(text) => setLyrics(text)}
-            />
-          </View>
+
           <View style={styles.buttonContainer}>
-            <Button title="Cancel" onPress={() => navigation.goBack()} />
-            <Button title="Submit" onPress={handleSubmit} />
-          </View>
-        </>
-      ) : (
-        <>
-          <Text>
-            Song Submitted! It may take up to a minute for the result to arrive.
-          </Text>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={onReturn} style={styles.button}>
-              <Text>Return</Text>
+            <TouchableOpacity 
+              style={[styles.button, styles.cancelButton]} 
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, styles.submitButton]} 
+              onPress={handleSubmit}
+            >
+              <Text style={[styles.buttonText, styles.submitButtonText]}>Submit</Text>
             </TouchableOpacity>
           </View>
-        </>
+        </View>
+      ) : (
+        <View style={styles.submittedContainer}>
+          <Text style={styles.submittedText}>
+            Song Submitted! It may take up to a minute for the result to arrive.
+          </Text>
+          <TouchableOpacity 
+            style={[styles.button, styles.returnButton]} 
+            onPress={onReturn}
+          >
+            <Text style={styles.buttonText}>Return</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  topContainer: {
-    flex: 1,
-  },
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    marginVertical: 20,
+    backgroundColor: "#F7FAFC",
+    padding: 16,
+  },
+  contentContainer: {
+    flex: 1,
+    gap: 20,
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#2D3748",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  inputsContainer: {
+    flex: 1,
+    gap: 12,
   },
   row: {
-    height: 50,
     flexDirection: "row",
     alignItems: "center",
-    width: "90%",
-    // borderColor: "rgba(0, 0, 0, 0.25)",
-    // borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginVertical: 5,
     backgroundColor: "white",
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   iconContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "flex-start",
-  },
-  inputContainer: {
-    flex: 5,
+    marginRight: 12,
   },
   input: {
+    flex: 1,
     fontSize: 16,
+    color: "#2D3748",
   },
-  lyricInput: {
-    width: "90%",
-    // borderColor: "rgba(0, 0, 0, 0.25)",
-    // borderWidth: 1,
-    borderRadius: 10,
-    // paddingHorizontal: 10,
-    flex: 5,
-    elevation: 5,
+  lyricsContainer: {
+    flex: 1,
     backgroundColor: "white",
-    padding: 10,
-    marginVertical: 10,
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  lyricsInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#2D3748",
+    minHeight: 200,
   },
   buttonContainer: {
-    marginVertical: 10,
-    flex: 1,
     flexDirection: "row",
-    justifyContent: "space-around",
-    width: "80%",
+    justifyContent: "space-between",
+    gap: 12,
+    marginTop: 20,
   },
   button: {
     flex: 1,
+    padding: 16,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f0f0f0",
-    paddingVertical: 12,
-    borderRadius: 20,
-    marginHorizontal: 5,
+  },
+  cancelButton: {
+    backgroundColor: "#EDF2F7",
+  },
+  submitButton: {
+    backgroundColor: "#4299E1",
+  },
+  returnButton: {
+    backgroundColor: "#4299E1",
+    marginTop: 20,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#4A5568",
+  },
+  submitButtonText: {
+    color: "white",
+  },
+  submittedContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  submittedText: {
+    fontSize: 18,
+    textAlign: "center",
+    color: "#2D3748",
+    marginBottom: 20,
   },
 });

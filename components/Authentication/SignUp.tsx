@@ -22,6 +22,8 @@ export default function SignUp({ navigation }) {
       },
     });
 
+    
+
     if (error) Alert.alert(error.message);
     if (!session) Alert.alert("Please check your inbox for email verification!");
 
@@ -69,7 +71,6 @@ export default function SignUp({ navigation }) {
       </View>
       <View style={styles.verticallySpaced}>
         <Button
-        //   title="Already have an account? Sign in"
           variant="outlined"
           onPress={() => navigation.navigate("SignIn")}
         >
