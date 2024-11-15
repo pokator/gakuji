@@ -65,22 +65,25 @@ const AddButton = ({ navigation, refreshList }) => {
         const {
           data: { session },
         } = await supabase.auth.getSession();
+
         const response = await apiClient.addSongSpot({
           uri: uri,
           refresh_token: session?.refresh_token,
           access_token: session?.access_token,
         });
+
         console.log(response);
-        if (response.data.count != null) {
+
+        const message = response.data?.message;
+        if (response.data?.status === "success") {
           setFillText("Song added successfully.");
         } else {
-          setFillText(
-            "Song could not be added. Please try a different method."
-          );
+          setFillText(message || "Song could not be added. Please try a different method.");
         }
       }
     } catch (error) {
       console.error("Failed to fetch songs:", error);
+      setFillText("An error occurred. Please try again.");
     }
 
     // After handling the URI, close the modal
@@ -91,7 +94,6 @@ const AddButton = ({ navigation, refreshList }) => {
   };
 
   const handleSearchSubmit = async () => {
-    // Do something with the artist and title
     setSubmitted(true);
     try {
       const apiClient = await initializeApiClient();
@@ -99,26 +101,26 @@ const AddButton = ({ navigation, refreshList }) => {
         const {
           data: { session },
         } = await supabase.auth.getSession();
+  
         const response = await apiClient.addSongSearch({
           artist: artist,
           title: title,
           refresh_token: session?.refresh_token,
           access_token: session?.access_token,
         });
-        console.log(response);
-        if (response.data.count != null) {
+  
+        const message = response.data?.message;
+        if (response.data?.status === "success") {
           setFillText("Song added successfully.");
         } else {
-          setFillText(
-            "Song could not be added. Please try a different method."
-          );
+          setFillText(message || "Song could not be added. Please try a different method.");
         }
       }
     } catch (error) {
       console.error("Failed to fetch songs:", error);
+      setFillText("An error occurred. Please try again.");
     }
-
-    // After handling the artist and title, close the modal
+  
     setArtist("");
     setTitle("");
     refreshList();

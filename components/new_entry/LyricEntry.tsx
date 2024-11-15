@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import { Mic, Disc } from "@tamagui/lucide-icons";
 import { APIClient } from "../../api-client/api";
 import { supabase } from "../../lib/supabase";
@@ -9,9 +15,14 @@ export function LyricsEntryScreen({ navigation }) {
   const [title, setTitle] = useState("");
   const [lyrics, setLyrics] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [fillText, setFillText] = useState(
+    "Song submitted! It will be added to the list shortly."
+  );
 
   const initializeApiClient = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     return session?.access_token ? new APIClient(session.access_token) : null;
   };
 
@@ -20,16 +31,31 @@ export function LyricsEntryScreen({ navigation }) {
     try {
       const apiClient = await initializeApiClient();
       if (apiClient) {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
         const response = await apiClient.addSongManual({
-          title, artist, lyrics,
+          title,
+          artist,
+          lyrics,
           refresh_token: session?.refresh_token,
           access_token: session?.access_token,
         });
         console.log(response);
+
+        const message = response.data?.message;
+        if (response.data?.status === "success") {
+          setFillText("Song added successfully.");
+        } else {
+          setFillText(
+            message || "Song could not be added. Please try a different method."
+          );
+        }
       }
     } catch (error) {
       console.error("Failed to fetch songs:", error);
+      setFillText("An error occurred. Please try again.");
     }
   };
 
@@ -86,27 +112,27 @@ export function LyricsEntryScreen({ navigation }) {
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity 
-              style={[styles.button, styles.cancelButton]} 
+            <TouchableOpacity
+              style={[styles.button, styles.cancelButton]}
               onPress={() => navigation.goBack()}
             >
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.button, styles.submitButton]} 
+            <TouchableOpacity
+              style={[styles.button, styles.submitButton]}
               onPress={handleSubmit}
             >
-              <Text style={[styles.buttonText, styles.submitButtonText]}>Submit</Text>
+              <Text style={[styles.buttonText, styles.submitButtonText]}>
+                Submit
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
       ) : (
         <View style={styles.submittedContainer}>
-          <Text style={styles.submittedText}>
-            Song Submitted! It may take up to a minute for the result to arrive.
-          </Text>
-          <TouchableOpacity 
-            style={[styles.button, styles.returnButton]} 
+          <Text style={styles.submittedText}>{fillText}</Text>
+          <TouchableOpacity
+            style={[styles.button, styles.returnButton]}
             onPress={onReturn}
           >
             <Text style={styles.buttonText}>Return</Text>
