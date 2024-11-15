@@ -23,7 +23,7 @@
       "package": "com.sourav.gakuji"
     },
      "web": {
-      "output": "server",
+      "output": "single",
       "bundler": "metro"
     },
     "extra": {
