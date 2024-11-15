@@ -6,6 +6,7 @@ import {
   TextInput,
   Text,
   TouchableOpacity,
+  Pressable,
 } from "react-native";
 import { FAB, Portal, Button } from "react-native-paper";
 import { APIClient } from "../api-client/api"; // API client initialized
@@ -143,9 +144,9 @@ const AddButton = ({ navigation, refreshList }) => {
                 <>
                   <Text>{fillText}</Text>
                   <View style={styles.buttonContainer}>
-                    <TouchableOpacity onPress={onReturn} style={styles.button}>
+                    <Pressable onPress={onReturn} style={styles.button}>
                       <Text>Return</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                 </>
               ) : (
@@ -160,13 +161,13 @@ const AddButton = ({ navigation, refreshList }) => {
                         onChangeText={(text) => setURI(text)}
                       />
                       <View style={styles.buttonContainer}>
-                        <TouchableOpacity
+                        <Pressable
                           style={styles.button}
                           onPress={handleCloseModal}
                         >
                           <Text style={styles.buttonText}>Cancel</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
+                        </Pressable>
+                        <Pressable
                           style={[
                             styles.button,
                             { backgroundColor: "#007bff" },
@@ -176,7 +177,7 @@ const AddButton = ({ navigation, refreshList }) => {
                           <Text style={[styles.buttonText, { color: "#fff" }]}>
                             Submit
                           </Text>
-                        </TouchableOpacity>
+                        </Pressable>
                       </View>
                     </>
                   ) : (
