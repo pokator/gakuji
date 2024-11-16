@@ -75,7 +75,9 @@ export function LyricsView({ route, navigation }) {
 
   const pagerRef = useRef<ScrollView>(null);
   const lyricsViewRef = useRef<Animated.ScrollView>(null);
+
   const [activeIndex, setActiveIndex] = useState(0);
+  
   const scrollViewHeight = useSharedValue(0);
   const [topRowHeight, setTopRowHeight] = useState(0);
   const kanjiActiveShared = useSharedValue(kanjiActive ? 1 : 0);

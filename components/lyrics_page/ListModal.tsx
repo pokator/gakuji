@@ -189,7 +189,7 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
     try {
       const apiClient = await initializeApiClient();
       if (apiClient) {
-        const type = activeIndex === 0 ? "word" : "kanji";
+        const type = activeIndex === 2 ? "kanji" : "word";
         const allListsResponse = await apiClient.getTypeLists(type);
         const listsWithoutTermResponse = await apiClient.checkAllLists(
           term,
@@ -260,7 +260,7 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
         <View style={styles.modalContent}>
           <Text style={styles.modalText}>
             {activeIndex === 0
-              ? "Store to a word list"
+              ? "Store to a Word list"
               : "Store to a Kanji List"}
           </Text>
 
