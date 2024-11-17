@@ -86,6 +86,7 @@ export function LyricsView({ route, navigation }) {
   const [selectedKanji, setSelectedKanji] = useState<string>("");
 
   const openModal = (kanji: string) => {
+    console.log("Opening modal for kanji or word:", kanji);
     setSelectedKanji(kanji);
     setModalVisible(true);
   };
@@ -246,6 +247,8 @@ export function LyricsView({ route, navigation }) {
   const WordSection = ({ data, title }) => {
     if (!data || !data.word || !data.definitions?.length) return null;
 
+    console.log("Showing word data:", data);
+
     const currentDef = data.definitions[data.definitionIndex];
 
     return (
@@ -310,7 +313,7 @@ export function LyricsView({ route, navigation }) {
             ))}
           </View>
           <TouchableOpacity
-            onPress={() => openModal(data.idseq)}
+            onPress={() => openModal(currentDef.idseq.toString())}
             style={styles.bookmarkContainer}
           >
             <Bookmark size={24} color="black" />
