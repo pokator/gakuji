@@ -310,7 +310,7 @@ export function LyricsView({ route, navigation }) {
             ))}
           </View>
           <TouchableOpacity
-            onPress={() => openModal(data.word)}
+            onPress={() => openModal(data.idseq)}
             style={styles.bookmarkContainer}
           >
             <Bookmark size={24} color="black" />

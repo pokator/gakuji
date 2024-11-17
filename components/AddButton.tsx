@@ -155,7 +155,7 @@ const AddButton = ({ navigation, refreshList }) => {
                 <>
                   {modalType === "link" ? (
                     <>
-                      <Text style={styles.modalTitle}>From Link</Text>
+                      <Text style={styles.modalTitle}>Spotify Link</Text>
                       <TextInput
                         style={styles.input}
                         placeholder="Enter URI"
@@ -235,7 +235,7 @@ const AddButton = ({ navigation, refreshList }) => {
         actions={[
           {
             icon: "star",
-            label: "From Link",
+            label: "Spotify Link",
             onPress: handleFromLinkPress,
             labelTextColor: "white",
           },
