@@ -120,6 +120,14 @@ export function LyricsView({ route, navigation }) {
     setActiveIndex(pageIndex);
   };
 
+   // Function to scroll to a specific index
+   const scrollToIndex = (index) => {
+    if (index !== activeIndex) {
+      pagerRef.current?.scrollTo({ x: index * width, animated: true });
+      // setActiveIndex(index);
+    }
+  };
+
   const ref = useRef<BottomSheetRefProps>(null);
 
   // Function to check if a character is kanji and fetch data
@@ -158,28 +166,6 @@ export function LyricsView({ route, navigation }) {
 
     return kanjiDetails;
   }
-
-  // const onPress = useCallback(
-  //   (word: React.SetStateAction<string>) => {
-  //     const isClosed = ref?.current?.zeroPosition();
-  //     if (isClosed) {
-  //       ref?.current?.openBottomSheet(1);
-  //     }
-  //     const wordObj = song?.["word_mapping"][word];
-
-  //     setWord(word);
-  //     setFurigana(wordObj.furigana);
-  //     setRomaji(wordObj.romaji);
-  //     setPartOfSpeech(wordObj.definitions?.[0]?.pos || []);
-  //     setIdseq(wordObj.idseq);
-  //     setDefinitions(wordObj.definitions || []);
-  //     setDefinitionIndex(0);
-
-  //     const kanjiList = parseKanji(word, song?.["kanji_data"]);
-  //     setKanjiList(kanjiList);
-  //   },
-  //   [song]
-  // );
 
   const onPress = useCallback(
     (word: React.SetStateAction<string>) => {
@@ -413,8 +399,6 @@ export function LyricsView({ route, navigation }) {
     };
   });
 
-  //present a modal with a list of checkboxes and a submit and cancel button
-
   return (
     <SafeAreaView style={styles.container}>
       <View
@@ -440,7 +424,7 @@ export function LyricsView({ route, navigation }) {
           <Animated.View style={[rScrollViewHeight]} ref={lyricsViewRef}>
             <ClickableText lyrics={song["lyrics"]} onPress={onPress} />
           </Animated.View>
-          <KanjiSheet ref={ref} activeIndex={activeIndex} setHeight={setHeight}>
+          <KanjiSheet ref={ref} activeIndex={activeIndex} setHeight={setHeight} dotScroll={scrollToIndex}>
             <ScrollView
               horizontal
               pagingEnabled

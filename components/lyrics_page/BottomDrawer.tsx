@@ -22,6 +22,7 @@ type BottomSheetProps = {
   children?: React.ReactNode;
   activeIndex?: number;
   setHeight: (height: number) => void;
+  dotScroll: (index: number) => void;
 };
 
 export type BottomSheetRefProps = {
@@ -32,7 +33,7 @@ export type BottomSheetRefProps = {
 };
 
 const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
-  ({ children, activeIndex = 0, setHeight }, ref) => {
+  ({ children, activeIndex = 0, setHeight, dotScroll }, ref) => {
     const active = useSharedValue(false);
     const offset = 105;
     const translateY = useSharedValue(0);
@@ -183,7 +184,7 @@ const KanjiSheet = React.forwardRef<BottomSheetRefProps, BottomSheetProps>(
               </Text>
               <View style={styles.dotsContainer}>
                 <Animated.View style={[arrowUpStyle]}>
-                  <Dots activeIndex={activeIndex} />
+                  <Dots activeIndex={activeIndex} dotScroll={dotScroll}/>
                 </Animated.View>
               </View>
               <View style={styles.buttonsContainer}>
